@@ -1,5 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import {EntityList, EntityListItem, Spinner, Stack} from '@contentful/f36-components';
+import {
+    AssetCard,
+    Paragraph,
+    EntityList,
+    EntityListItem,
+    Spinner,
+    Stack,
+    Heading,
+    Flex
+} from '@contentful/f36-components';
 import {DialogExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */ useSDK} from '@contentful/react-apps-toolkit';
 
@@ -42,26 +51,35 @@ const Dialog = () => {
                     minHeight: '100%',
                     justifyContent: 'center'
             }}>
+                <Heading>Fetching media...</Heading>
                 <Spinner size="large"/>
             </Stack>
         );
     }
 
     return (
-        <EntityList>
+        <Flex
+            justifyContent="space-evenly"
+            alignItems="center"
+            flexDirection="row"
+            flexWrap="wrap"
+        >
             {media.map((medias: any) => (
-                <EntityListItem
-                    key={medias.id}
-                    title={`${medias.name}${
-                        sdk.parameters.invocation === medias.name ? " (selected)" : ""
-                    }`}
-                    thumbnailUrl={medias.thumbnail.url}
-                    withThumbnail={true}
-                    onClick={() => {
-                        sdk.close(medias); // close the dialog and return the selected value
-                    }}
-                />))}
-        </EntityList>
+                    <AssetCard
+                        key={medias.id}
+                        testId={medias.id}
+                        type="image"
+                        title={`${medias.name}${
+                            sdk.parameters.invocation === medias.name ? " (selected)" : ""
+                        }`}
+                        src={medias.thumbnail.url}
+                        size="small"
+                        onClick={() => {
+                            sdk.close(medias); // close the dialog and return the selected value
+                        }}
+                    />
+                ))}
+        </Flex>
     );
 };
 

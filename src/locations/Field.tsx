@@ -1,9 +1,10 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Button, Flex} from '@contentful/f36-components';
 import {ExternalLinkIcon} from '@contentful/f36-icons';
 import {FieldExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */useFieldValue, useSDK} from '@contentful/react-apps-toolkit';
 import WistiaUploader from '../features/wistia/WistiaUploader';
+import Preview from "../features/wistia/components/Preview";
 
 
 const Field = () => {
@@ -31,14 +32,15 @@ const Field = () => {
             return;
         }
 
-        const {hashed_id} = result; // video id to build the url
-        sdk.entry.fields.externalUrl.setValue(`https://contentful.wistia.com/medias/${hashed_id}`);
-        setMedia(result);
+        await setMedia(result);
+
+        console.log(`File picker media`, media)
     }
 
     return (
         <>
-            <WistiaUploader/>
+            <WistiaUploader />
+            {media !== undefined && <Preview media={media} />}
             <Flex
                 flexDirection="column"
                 alignItems="center"

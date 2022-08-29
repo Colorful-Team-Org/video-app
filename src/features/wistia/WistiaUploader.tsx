@@ -1,8 +1,9 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {Notification} from '@contentful/f36-components';
+import {Button, Notification} from '@contentful/f36-components';
 import {useFieldValue, useSDK} from '@contentful/react-apps-toolkit';
 import loadScript from '../../utils/loadScript';
 import DropZone from './components/DropZone';
+import Preview from './components/Preview';
 import {FieldExtensionSDK} from "@contentful/app-sdk";
 
 declare global {
@@ -47,7 +48,7 @@ const WistiaUploader = () => {
     }
 
     const uploadCancelled = (file: any) => {
-        setStatus('You have cancelled your video upload.');
+        setStatus('Cancelled upload.');
         setFile(null);
         setIsActive(false);
         setRetry(true);
@@ -98,14 +99,14 @@ const WistiaUploader = () => {
             }
         });
 
-        setStatus(`Upload failed. ${response}`);
+        setStatus('Opps... Something went wrong.');
         setFile(null);
         setIsActive(false);
         setRetry(true);
     }, []);
 
     const uploadSuccess = useCallback((file: any, media: any) => {
-        setStatus(`The video upload has finished! Now you can publish your content.`);
+        setStatus('Successfully uploaded.');
         setIsActive(false);
         setRetry(true);
 
@@ -121,7 +122,7 @@ const WistiaUploader = () => {
         }
 
         Notification.success(`Upload successful! ${media.url}`);
-        sdk.entry.fields.externalUrl.setValue(media.url);
+        console.log(`Upload media`, media)
 
         return window.wistiaUploader.unbind;
     }, [sdk, setMedia]);
@@ -163,7 +164,7 @@ const WistiaUploader = () => {
     };
 
     return (
-        <DropZone {...PropsDropZone}/>
+            <DropZone {...PropsDropZone}/>
     );
 }
 
