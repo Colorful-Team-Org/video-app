@@ -11,8 +11,8 @@ const ProgressBar = ({ progress }: any) => {
               height: '8x',
               marginLeft: 'auto',
               marginRight: 'auto',
-              marginTop: '10px',
-              marginBottom: '10px',
+              marginTop: '5px',
+              marginBottom: '5px',
           }}>
           <Box
               as="div"

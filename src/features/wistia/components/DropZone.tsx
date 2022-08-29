@@ -21,7 +21,7 @@ const DropZone = ({status, progress, file, retry, isActive}: any) => {
                 justifyContent="center"
                 style={{
                     width: '100%',
-                    minHeight: '320px',
+                    minHeight: '170px',
                     backgroundColor: '#f7f9fa',
                     textAlign: 'center',
                     border: '1px dashed rgb(174, 193, 204)',
