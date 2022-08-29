@@ -1,12 +1,18 @@
 import {setup} from '@contentful/dam-app-base';
-import logo from '../temp/cloud-upload-outline.svg';
+import logo from '../temp/wistia-flags_color.png';
 
 const validateParameters = ({accessToken, projectId}: any) => {
     if (accessToken === undefined) {
-        return 'accessToken is required';
+        return 'Access Token is required';
     }
     if (projectId === undefined) {
-        return 'projectId is required';
+        return 'Project ID is required';
+    }
+    if (accessToken && accessToken.length < 64) {
+        return 'Access Token must be at least 64 characters long';
+    }
+    if (projectId && projectId.length < 10) {
+        return 'Project ID must be at least 10 characters long';
     }
     return null;
 }
@@ -16,26 +22,25 @@ const ConfigScreen = () => {
     setup({
         cta: "Wistia",
         logo,
-        name: "Wistia Uploader",
-        color: "#F7F9FA",
+        name: "Wistia Uploader & Media picker",
+        color: "#1e64f0",
         description:
-            "TInstall the app to add external assets from Wistia straight into Contentful. Hey! You can\n" +
-            "                    upload the media to Wistia too!",
+            `The application connects with your Wistia account and allows to upload media or link already uploaded videos to your content in Contentful.
+            Once the Access Token and Project ID are set, choose which JSON Object fields you want to use for the Wistia Uploader.`,
         parameterDefinitions: [
             {
                 "id": "accessToken",
                 "type": "Symbol",
                 "name": "Wistia Upload Access Token",
-                "description": "Provide a valid token to upload media to Wistia.",
-                "required": true
+                "description": "Here comes the token from the Wistia dashboard -> Settings -> API Access. If you do not have access to Settings, you can request the Upload token from your administrator.",
+                "required": true,
             },
             {
                 "id": "projectId",
                 "type": "Symbol",
                 "name": "Wistia Project ID",
-                "description": "Provide a valid Project ID to upload media to Wistia. At the moment the Project ID is fixed to 'Customer KB' at contentful.wistia.com.",
+                "description": "Provide a valid Project ID to upload media to Wistia. You can find your Project ID in your Wistia account.",
                 "required": true,
-                "default": "5l57vxwax2"
             },
         ],
         validateParameters,
