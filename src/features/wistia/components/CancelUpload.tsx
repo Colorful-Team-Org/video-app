@@ -1,4 +1,5 @@
-import {Button, ModalConfirm, Text} from '@contentful/f36-components';
+import {IconButton, ModalConfirm, Text, Tooltip} from '@contentful/f36-components';
+import {CloseTrimmedIcon} from '@contentful/f36-icons';
 import React from "react";
 
 const CancelUpload = () => {
@@ -7,11 +8,17 @@ const CancelUpload = () => {
 
     return (
         <>
-            <Button
-                variant="transparent"
-                onClick={() => setIsShown(true)}>
-                Cancel video upload
-            </Button>
+
+            <Tooltip content="Cancel upload">
+                <IconButton
+                    aria-label="Cancel upload"
+                    icon={<CloseTrimmedIcon/>}
+                    variant="transparent"
+                    size="medium"
+                    onClick={() => setIsShown(true)}
+                />
+            </Tooltip>
+
             <ModalConfirm
                 title="Cancel video upload"
                 intent="negative"

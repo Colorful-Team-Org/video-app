@@ -1,9 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
     AssetCard,
-    Paragraph,
-    EntityList,
-    EntityListItem,
     Spinner,
     Stack,
     Heading,
@@ -49,7 +46,8 @@ const Dialog = () => {
                 flexDirection="column"
                 style={{
                     minHeight: '100%',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    margin: '2rem auto',
             }}>
                 <Heading>Fetching media...</Heading>
                 <Spinner size="large"/>

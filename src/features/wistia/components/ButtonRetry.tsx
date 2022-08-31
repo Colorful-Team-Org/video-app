@@ -5,8 +5,7 @@ const ButtonRetry = ({progress}: any) => {
 
     return (
         <Button
-            variant="secondary"
-            size="small"
+            variant="primary"
             style={{marginTop: '10px'}}
             onClick={() => {
                 window.location.reload();

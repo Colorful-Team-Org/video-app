@@ -11,7 +11,7 @@ const ButtonUpload = ({progress, isActive}: any) => {
         >
             {progress
                 ? progress + ' uploaded'
-                : 'Select a file to upload'
+                : 'Upload Video'
             }
         </Button>
     );
