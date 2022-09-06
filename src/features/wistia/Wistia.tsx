@@ -9,18 +9,19 @@ import {
     Heading,
     IconButton,
     Paragraph,
-    Stack, TextInput,
+    Stack,
+    TextInput,
+    Text,
+    TextLink,
     Tooltip
 } from "@contentful/f36-components";
 import {Notification} from '@contentful/f36-notification';
-import {EditIcon} from '@contentful/f36-icons';
-import ButtonUpload from "./components/ButtonUpload";
+import tokens from "@contentful/f36-tokens";
+import {EditIcon, ExternalLinkTrimmedIcon, DoneIcon} from '@contentful/f36-icons';
 import CancelUpload from "./components/CancelUpload";
 import ProgressBar from "./components/ProgressBar";
 import ButtonRetry from "./components/ButtonRetry";
 import loadScript from '../../utils/loadScript';
-// import tokens from "@contentful/f36-tokens";
-import {DoneIcon} from "@contentful/f36-icons";
 
 declare global {
     interface Window {
@@ -48,9 +49,10 @@ const Wistia = (props: any) => {
     const [progress, setProgress] = useState("");
     const [retry, setRetry] = useState(false);
     const [uploadActive, setUploadActive] = useState(false);
-    const [editNameOpen, setEditNameOpen] = useState(false);
+    const [editNameShow, setEditNameShow] = useState(false);
 
     const [fileName, setFileName] = useState('');
+    const [wistiaUrl, setWistiaUrl] = useState('');
     const [media, setMedia] = useFieldValue();
 
 
@@ -74,18 +76,6 @@ const Wistia = (props: any) => {
         setFileName('');
         setUploadActive(false);
         setRetry(true);
-        Notification.warning(`The video upload has been cancelled!`, {
-            cta: {
-                label: 'Try again',
-                textLinkProps: {
-                    variant: 'primary',
-                    onClick: () => {
-                        Notification.closeAll();
-                        window.location.reload();
-                    }
-                },
-            },
-        });
     }
 
     const uploadFailed = useCallback((file: any, errorResponse: any) => {
@@ -134,51 +124,42 @@ const Wistia = (props: any) => {
 
         if (media !== undefined) {
             const setMediaRef = async () => {
-                try {
-                    await setMedia(media);
-                } catch (error) {
+                const response = await fetch(`https://api.wistia.com/v1/medias/${media.id}.json`, {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${sdk.parameters.installation.accessToken}`
+                    }
+                }).then(response => {
+                    if (response.status === 200) {
+                        return response.json();
+                    }
+                }).catch(error => {
                     return error;
-                }
+                });
+                setMedia(response);
             }
             setMediaRef();
         }
-
-        Notification.success(`Upload successful! ${media.url}`);
         // TODO: remove console.log
         console.log(`Upload media`, media)
 
         return window.wistiaUploader.unbind;
-    }, [sdk, setMedia]);
+    }, [setMedia]);
 
     const updateName = async (media: any) => {
-        console.log(`
-        Update media name 
-        ${fileName}
-        
-        Edit name likely 401, due to access token lacking permissions.
-        `);
-
-        const response = await fetch(`https://api.wistia.com/v1/${media.id}.json&name=${fileName}`, {
-            method: 'PUT',
+        await fetch(`https://api.wistia.com/v1/${media.hashed_id}.json&name=${fileName}`, {
+            // mode: 'no-cors',
+            method: 'POST',
             headers: {
                 Authorization: `Bearer ${sdk.parameters.installation.accessToken}`,
                 'Content-Type': 'application/json',
             },
-            // body: JSON.stringify({name: fileName})
-        }).then(response => {
-            if (response.status === 200) {
-                console.log(response.json());
-                return response.json();
-            }
-        }).catch(error => {
-            return error;
         });
+        console.log(`Update name`, fileName);
     }
 
 
     useEffect(() => {
-        Notification.setPlacement('top', {offset: 30});
-
         loadScript('//fast.wistia.com/assets/external/api.js').then(() => {
             window._wapiq = window._wapiq || [];
             window._wapiq.push(function (W: any) {
@@ -226,118 +207,132 @@ const Wistia = (props: any) => {
         if (media !== undefined) {
             // @ts-ignore
             setFileName(media.name);
+            // @ts-ignore
+            setWistiaUrl(`https://contentful.wistia.com/medias/${media.hashed_id}`);
+
+        } else {
+            setFileName('');
         }
     }, [media]);
 
-
     return (
         <>
-            {media &&
-                <Stack>
-                    {!editNameOpen &&
-                        <>
-                            <Heading>{fileName}</Heading>
+            <Stack style={{marginBottom: '1rem'}}>
+                {!editNameShow &&
+                    <>
+                        <Heading style={{margin: 0}}>{fileName}</Heading>
+                        {fileName !== '' &&
                             <Tooltip content="Edit Video Name">
                                 <IconButton
                                     aria-label="Edit Video Name"
                                     icon={<EditIcon/>}
                                     variant="secondary"
                                     size="small"
-                                    onClick={() => setEditNameOpen(!editNameOpen)}
-                                    style={{marginBottom: '1rem'}}
+                                    onClick={() => setEditNameShow(!editNameShow)}
                                 />
                             </Tooltip>
-                        </>
-                    }
-                    {editNameOpen &&
-                        <FormControl
-                            isRequired
-                            isInvalid={!fileName}
-                            style={{width: '100%'}}
-                        >
-                            <TextInput.Group>
-                                <TextInput
-                                    aria-label="Video Name"
-                                    value={fileName}
-                                    type="text"
-                                    name="text"
-                                    placeholder="Enter new video name"
-                                    onChange={(e) => setFileName(e.target.value)}
-                                />
-                                <IconButton
-                                    aria-label="Edit Done"
-                                    icon={<DoneIcon/>}
-                                    variant="secondary"
-                                    onClick={() => {
-                                        setEditNameOpen(!editNameOpen)
-                                       updateName(media);
-                                    }}
-                                />
-                            </TextInput.Group>
-                            {!fileName && (
-                                <FormControl.ValidationMessage>
-                                    Please, provide a video name
-                                </FormControl.ValidationMessage>
-                            )}
-                        </FormControl>
-                    }
-                </Stack>
-            }
-            <Box
-                as="div"
-                id="wistia_upload_drop_zone"
-            >
-                <Flex
-                    as="div"
-                    id="wistia_upload_drop_zone_hover"
-                    flexDirection="column"
-                    alignItems="center"
-                    justifyContent="center"
-                    style={{
-                        width: '100%',
-                        minHeight: '170px',
-                        backgroundColor: '#f7f9fa',
-                        textAlign: 'center',
-                        border: '1px dashed rgb(174, 193, 204)',
-                        // borderRadius: tokens.borderRadiusMedium,
-                        // backgroundColor: tokens.gray200,
-                        // borderTopLeftRadius: tokens.borderRadiusMedium,
-                        // borderTopRightRadius: tokens.borderRadiusMedium,
-                    }}
-                >
-                    <Stack spacing="spacingS" margin="spacingM">
-                        {!retry &&
-                            <ButtonUpload
-                                progress={progress}
-                                uploadActive={uploadActive}
+                        }
+                    </>
+                }
+                {editNameShow &&
+                    <FormControl
+                        isRequired
+                        isInvalid={!fileName}
+                        style={{width: '100%', marginBottom: '0'}}>
+                        <TextInput.Group>
+                            <TextInput
+                                aria-label="Video Name"
+                                value={fileName}
+                                type="text"
+                                name="text"
+                                placeholder="Enter new video name"
+                                size="small"
+                                onChange={(e) => setFileName(e.target.value)}
                             />
+                            <IconButton
+                                aria-label="Edit Done"
+                                icon={<DoneIcon/>}
+                                variant="positive"
+                                size="small"
+                                onClick={() => {
+                                    setEditNameShow(!editNameShow)
+                                    updateName(media);
+                                }}
+                            />
+                        </TextInput.Group>
+                        {!fileName && (
+                            <FormControl.ValidationMessage>
+                                Please, provide a video name
+                            </FormControl.ValidationMessage>
+                        )}
+                    </FormControl>
+                }
+                {uploadActive &&
+                    <CancelUpload/>
+                }
+                {media !== undefined &&
+                    <Box style={{
+                        marginLeft: 'auto',
+                        minWidth: '118px',
+                    }}>
+                        {wistiaUrl &&
+                            <Stack spacing="spacingXs">
+                                <ExternalLinkTrimmedIcon/><TextLink href={wistiaUrl} target="_blank">Open in Wistia</TextLink>
+                            </Stack>
                         }
+                    </Box>
+                }
+            </Stack>
+
+            {!media &&
+                <Box
+                    as="div"
+                    id="wistia_upload_drop_zone"
+                >
+                    <Flex
+                        as="div"
+                        id="wistia_upload_drop_zone_hover"
+                        flexDirection="column"
+                        alignItems="center"
+                        justifyContent="center"
+                        style={{
+                            width: '100%',
+                            minHeight: '395px',
+                            backgroundColor: '#f7f9fa',
+                            textAlign: 'center',
+                            border: '1px dashed rgb(174, 193, 204)',
+                            borderRadius: tokens.borderRadiusMedium,
+                            // backgroundColor: tokens.gray200,
+                        }}
+                    >
                         {!uploadActive && !retry &&
-                            <Button
-                                variant="secondary"
-                                onClick={viewVideosList}
-                            >
-                                Select Video
-                            </Button>
-                        }
-                        {uploadActive &&
-                            <CancelUpload/>
+                            <Stack spacing="spacingS" margin="spacingM">
+                                <Button
+                                    id="wistia_upload_button"
+                                    variant="primary">
+                                    Upload Video
+                                </Button>
+                                <Button
+                                    variant="secondary"
+                                    onClick={viewVideosList}>
+                                    Select Video
+                                </Button>
+                            </Stack>
                         }
                         {retry &&
                             <ButtonRetry progress={progress}/>
                         }
-                    </Stack>
-
-                    {status &&
-                        <Paragraph>{status}</Paragraph>
-                    }
-
-                    {uploadActive &&
-                        <ProgressBar progress={progress}/>
-                    }
-
-                </Flex>
-            </Box>
+                        {uploadActive && progress &&
+                            <>
+                                <Text><strong>{progress} uploaded</strong></Text>
+                                <ProgressBar progress={progress}/>
+                            </>
+                        }
+                        {status && !retry &&
+                            <Paragraph>{status}</Paragraph>
+                        }
+                    </Flex>
+                </Box>}
         </>
     );
 }
