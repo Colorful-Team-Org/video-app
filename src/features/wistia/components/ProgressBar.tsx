@@ -9,8 +9,7 @@ const ProgressBar = ({progress}: any) => {
             style={{
                 width: '80%',
                 height: '8x',
-                marginLeft: 'auto',
-                marginRight: 'auto',
+                margin: '1rem auto',
                 backgroundColor: 'rgba(3,111,227,0.2)',
                 borderRadius: '6px',
             }}>
