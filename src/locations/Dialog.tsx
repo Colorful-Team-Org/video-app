@@ -4,7 +4,7 @@ import {
     Spinner,
     Stack,
     Heading,
-    Flex
+    Grid, Box, FormControl, TextInput, Paragraph, Text
 } from '@contentful/f36-components';
 import {DialogExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */ useSDK} from '@contentful/react-apps-toolkit';
@@ -18,9 +18,11 @@ const Dialog = () => {
     }, [sdk]);
 
     const [media, setMedia] = useState<Medias[] | undefined>();
+    const [selected, setSelected] = useState(false)
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState<Medias[] | undefined>();
 
     const fetchMedia = async () => {
-        // const response = await fetch (`https://api.wistia.com/v1/projects/${process.env.REACT_APP_WISTIA_PROJECT_ID}.json`, {
         const response = await fetch(`https://api.wistia.com/v1/medias.json?project_id=${sdk.parameters.installation.projectId}`, {
             method: 'GET',
             headers: {
@@ -34,11 +36,29 @@ const Dialog = () => {
             return error;
         });
         setMedia(response);
+        setResults(response);
     }
 
     useEffect(() => {
         fetchMedia();
-    }, [fetchMedia]);
+    }, []);
+
+    const filterMedia = (query: string) => {
+        if (query.length > 0) {
+            // @ts-ignore
+            const result: any = media.filter((media: Medias) => {
+                return media.name.toLowerCase().includes(query.toLowerCase());
+            });
+            setResults(result);
+        } else if (query.length === 0) {
+            setResults(media);
+        }
+    }
+
+    useEffect(() => {
+        filterMedia(query);
+    }, [query]);
+
 
     if (!media) {
         return (
@@ -48,7 +68,7 @@ const Dialog = () => {
                     minHeight: '100%',
                     justifyContent: 'center',
                     margin: '2rem auto',
-            }}>
+                }}>
                 <Heading>Fetching media...</Heading>
                 <Spinner size="large"/>
             </Stack>
@@ -56,28 +76,50 @@ const Dialog = () => {
     }
 
     return (
-        <Flex
-            justifyContent="space-evenly"
-            alignItems="center"
-            flexDirection="row"
-            flexWrap="wrap"
-        >
-            {media.map((medias: any) => (
-                    <AssetCard
-                        key={medias.id}
-                        testId={medias.id}
-                        type="image"
-                        title={`${medias.name}${
-                            sdk.parameters.invocation === medias.name ? " (selected)" : ""
-                        }`}
-                        src={medias.thumbnail.url}
-                        size="small"
-                        onClick={() => {
-                            sdk.close(medias); // close the dialog and return the selected value
-                        }}
-                    />
-                ))}
-        </Flex>
+        <Box style={{margin: '1.25rem'}}>
+            <FormControl>
+                <TextInput
+                    value={query}
+                    type="text"
+                    name="Search videos"
+                    placeholder="Search videos..."
+                    onChange={(e) => setQuery(e.target.value)}
+                />
+            </FormControl>
+            <Grid
+                style={{width: '100%'}}
+                columns="1fr 1fr 1fr"
+                rowGap="spacingM"
+                columnGap="spacingM"
+            >
+                {results && results.length > 0 ? (
+                    results.map((medias: any) => (
+                        <Box key={medias.id}>
+                            <AssetCard
+                                type="image"
+                                title={`${medias.name}${
+                                    sdk.parameters.invocation === medias.name ? " (selected)" : ""
+                                }`}
+                                src={medias.thumbnail.url}
+                                style={{height: '130px'}}
+                                isSelected={selected}
+                                onClick={() => {
+                                    setSelected(!selected);
+                                    sdk.close(medias); // close the dialog and return the selected value
+                                }}
+                            />
+                            <Text
+                                fontSize="fontSizeS"
+                                lineHeight="lineHeightS"
+                                fontColor="gray600"
+                                fontWeight="fontWeightDemiBold">
+                                {medias.name}</Text>
+                        </Box>
+                    ))) : (
+                    <Paragraph>No media found</Paragraph>
+                )}
+            </Grid>
+        </Box>
     );
 };
 
