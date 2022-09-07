@@ -4,7 +4,7 @@ import {
     Spinner,
     Stack,
     Heading,
-    Grid, Box, FormControl, TextInput, Paragraph, Text
+    Flex, Box, FormControl, TextInput, Paragraph, Text,
 } from '@contentful/f36-components';
 import {DialogExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */ useSDK} from '@contentful/react-apps-toolkit';
@@ -86,22 +86,29 @@ const Dialog = () => {
                     onChange={(e) => setQuery(e.target.value)}
                 />
             </FormControl>
-            <Grid
-                style={{width: '100%'}}
-                columns="1fr 1fr 1fr"
-                rowGap="spacingM"
-                columnGap="spacingM"
-            >
+            <Flex
+                fullWidth={true}
+                flexDirection="row"
+                flexWrap="wrap"
+                justifyContent="space-between"
+                gap="spacingM">
                 {results && results.length > 0 ? (
                     results.map((medias: any) => (
-                        <Box key={medias.id}>
+                        <Flex key={medias.id}
+                              flexDirection="column"
+                              flexWrap="wrap"
+                              gap="spacingXs">
                             <AssetCard
                                 type="image"
                                 title={`${medias.name}${
                                     sdk.parameters.invocation === medias.name ? " (selected)" : ""
                                 }`}
                                 src={medias.thumbnail.url}
-                                style={{height: '130px'}}
+                                style={{
+                                    width: '200px',
+                                    height: '121px',
+                                    overflow: 'hidden'
+                                }}
                                 isSelected={selected}
                                 onClick={() => {
                                     setSelected(!selected);
@@ -112,13 +119,19 @@ const Dialog = () => {
                                 fontSize="fontSizeS"
                                 lineHeight="lineHeightS"
                                 fontColor="gray600"
-                                fontWeight="fontWeightDemiBold">
+                                fontWeight="fontWeightDemiBold"
+                                style={{
+                                    inlineSize: '200px',
+                                    whiteSpace: 'nowrap',
+                                    textOverflow: 'ellipsis',
+                                    overflow: 'hidden'
+                                }}>
                                 {medias.name}</Text>
-                        </Box>
+                        </Flex>
                     ))) : (
                     <Paragraph>No media found</Paragraph>
                 )}
-            </Grid>
+            </Flex>
         </Box>
     );
 };
