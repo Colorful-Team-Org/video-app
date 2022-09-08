@@ -22,6 +22,7 @@ import CancelUpload from "./components/CancelUpload";
 import ProgressBar from "./components/ProgressBar";
 import ButtonRetry from "./components/ButtonRetry";
 import loadScript from '../../utils/loadScript';
+import {Medias} from "../../utils/types";
 
 declare global {
     interface Window {
@@ -53,7 +54,7 @@ const Wistia = (props: any) => {
 
     const [fileName, setFileName] = useState('');
     const [wistiaUrl, setWistiaUrl] = useState('');
-    const [media, setMedia] = useFieldValue();
+    const [media, setMedia] = useFieldValue<Medias[] | undefined>();
 
 
     const filterErrorMessage = (error: string, query: string) => {
@@ -147,15 +148,21 @@ const Wistia = (props: any) => {
     }, [setMedia]);
 
     const updateName = async (media: any) => {
-        await fetch(`https://api.wistia.com/v1/${media.hashed_id}.json&name=${fileName}`, {
-            // mode: 'no-cors',
-            method: 'POST',
+        const response = await fetch(`https://api.wistia.com/v1/medias/${media.hashed_id}.json?name=${fileName}`, {
+            method: 'PUT',
             headers: {
                 Authorization: `Bearer ${sdk.parameters.installation.accessToken}`,
-                'Content-Type': 'application/json',
-            },
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(response => {
+            if (response.status === 200) {
+                console.log(`Name updated successfully, response: `, response);
+                sdk.entry.fields.externalVideo.setValue({...media, name: fileName})
+                return response.json();
+            }
+        }).catch(error => {
+            return error;
         });
-        console.log(`Update name`, fileName);
     }
 
 
@@ -165,23 +172,6 @@ const Wistia = (props: any) => {
             window._wapiq.push(function (W: any) {
                 window.wistiaUploader = new W.Uploader({
                     ...uploaderConfig,
-                    // beforeUpload: () => {
-                    //     const name = sdk.entry.fields.internalName.getValue();
-                    //     const description = sdk.entry.fields.description.getValue();
-                    //
-                    //     if (name !== undefined) {
-                    //         window.wistiaUploader.setFileName(name);
-                    //     }
-                    //
-                    //     if (description !== undefined) {
-                    //         window.wistiaUploader.setFileDescription(description);
-                    //     }
-                    //     console.log(`File name (beforeUpload)`, name);
-                    //     console.log(`File description (beforeUpload)`, description);
-                    // },
-                    // embedCodeOptions: {
-                    //     controlsVisibleOnLoad: false,
-                    // }
                 });
 
                 window.wistiaUploader
@@ -222,13 +212,14 @@ const Wistia = (props: any) => {
                     <>
                         <Heading style={{margin: 0}}>{fileName}</Heading>
                         {fileName !== '' &&
-                            <Tooltip content="Edit Video Name">
+                            <Tooltip content={uploadActive ? 'You cannot edit the name while uploading' : 'Edit video name'}>
                                 <IconButton
                                     aria-label="Edit Video Name"
                                     icon={<EditIcon/>}
                                     variant="secondary"
                                     size="small"
                                     onClick={() => setEditNameShow(!editNameShow)}
+                                    isDisabled={uploadActive}
                                 />
                             </Tooltip>
                         }
@@ -276,9 +267,12 @@ const Wistia = (props: any) => {
                         minWidth: '118px',
                     }}>
                         {wistiaUrl &&
-                            <Stack spacing="spacingXs">
-                                <ExternalLinkTrimmedIcon/><TextLink href={wistiaUrl} target="_blank">Open in Wistia</TextLink>
-                            </Stack>
+                            <TextLink href={wistiaUrl} target="_blank">
+                                <Stack spacing="spacing2Xs">
+                                    <ExternalLinkTrimmedIcon/>
+                                    Open in Wistia
+                                </Stack>
+                            </TextLink>
                         }
                     </Box>
                 }
@@ -302,7 +296,6 @@ const Wistia = (props: any) => {
                             textAlign: 'center',
                             border: '1px dashed rgb(174, 193, 204)',
                             borderRadius: tokens.borderRadiusMedium,
-                            // backgroundColor: tokens.gray200,
                         }}
                     >
                         {!uploadActive && !retry &&
