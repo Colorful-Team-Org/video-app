@@ -8,6 +8,7 @@ import {
 } from '@contentful/f36-components';
 import {DialogExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */ useSDK} from '@contentful/react-apps-toolkit';
+import {Medias} from "../utils/types";
 
 const Dialog = () => {
     const sdk = useSDK<DialogExtensionSDK>();
@@ -137,40 +138,3 @@ const Dialog = () => {
 };
 
 export default Dialog;
-
-export interface Medias {
-    id: number;
-    name: string;
-    type: string;
-    created: Date;
-    updated: Date;
-    duration: number;
-    hashed_id: string;
-    description: string;
-    progress: number;
-    status: string;
-    thumbnail: Thumbnail;
-    project: Project;
-    assets: Asset[];
-}
-
-export interface Asset {
-    url: string;
-    width: number;
-    height: number;
-    fileSize: number;
-    contentType: string;
-    type: string;
-}
-
-export interface Project {
-    id: number;
-    name: string;
-    hashed_id: string;
-}
-
-export interface Thumbnail {
-    url: string;
-    width: number;
-    height: number;
-}
