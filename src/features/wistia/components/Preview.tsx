@@ -7,14 +7,6 @@ const Preview = ({media}: any) => {
     const [iframeSrc, setIframeSrc] = useState('');
 
     useEffect(() => {
-        if (media !== undefined && media.type === 'video') {
-            const {url} = media;
-            const getWistiaIdFromUrl = (url: string): string => {
-                return url.split('wistia.com/medias/')[1];
-            }
-            setIframeSrc(`https://fast.wistia.net/embed/iframe/${getWistiaIdFromUrl(url)}`);
-        }
-
         if (media !== undefined && media.hashed_id !== undefined) {
             setIframeSrc(`https://fast.wistia.net/embed/iframe/${media.hashed_id}`);
         }
@@ -30,7 +22,8 @@ const Preview = ({media}: any) => {
             }}
         >
             <iframe
-                src={`${iframeSrc}?videoFoam=true&controlsVisibleOnLoad=false&smallPlayButton=true`}
+                src={`${iframeSrc}?controlsVisibleOnLoad=false&smallPlayButton=true`}
+                title="Wistia Preview"
                 frameBorder="0"
                 scrolling="no"
                 className="wistia_embed"
