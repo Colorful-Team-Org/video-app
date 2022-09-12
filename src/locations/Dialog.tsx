@@ -6,6 +6,7 @@ import {
     Heading,
     Flex, Box, FormControl, TextInput, Paragraph, Text,
 } from '@contentful/f36-components';
+import {Notification} from '@contentful/f36-notification';
 import {DialogExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */ useSDK} from '@contentful/react-apps-toolkit';
 import {Medias} from "../utils/types";
@@ -32,6 +33,18 @@ const Dialog = () => {
         }).then(response => {
             if (response.status === 200) {
                 return response.json();
+            }
+
+            if (response.status === 401) {
+                // sdk.notifier.error('Unauthorized. Please check your access token.');
+                Notification.error('Couldn\'t load videos list. Please check your access token.', {title: 'Unauthorized, 401.'});
+                setTimeout(() => sdk.close(), 5000);
+            }
+
+            if (response.status === 404) {
+                // sdk.notifier.error('Unauthorized. Please check your access token.');
+                Notification.error('Couldn\'t load videos list. Please check your Project ID.', {title: 'Project not found, 404.'});
+                setTimeout(() => sdk.close(), 5000);
             }
         }).catch(error => {
             return error;
@@ -91,8 +104,8 @@ const Dialog = () => {
                 fullWidth={true}
                 flexDirection="row"
                 flexWrap="wrap"
-                justifyContent="space-between"
-                gap="spacingM">
+                justifyContent="flex-start"
+                gap="1.875rem">
                 {results && results.length > 0 ? (
                     results.map((medias: any) => (
                         <Flex key={medias.id}
