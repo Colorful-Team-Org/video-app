@@ -20,7 +20,6 @@ import tokens from "@contentful/f36-tokens";
 import {EditIcon, ExternalLinkTrimmedIcon, DoneIcon} from '@contentful/f36-icons';
 import CancelUpload from "./components/CancelUpload";
 import ProgressBar from "./components/ProgressBar";
-import ButtonRetry from "./components/ButtonRetry";
 import loadScript from '../../utils/loadScript';
 import {Medias} from "../../utils/types";
 
@@ -100,6 +99,7 @@ const Wistia = (props: any) => {
         }
 
         Notification.error(`${response}`, {
+            title: 'Upload failed',
             cta: {
                 label: 'Try again',
                 textLinkProps: {
@@ -159,6 +159,10 @@ const Wistia = (props: any) => {
                 console.log(`Name updated successfully, response: `, response);
                 sdk.entry.fields.externalVideo.setValue({...media, name: fileName})
                 return response.json();
+            }
+
+            if (response.status === 404) {
+                Notification.error(`The video might have been removed from the Wistia platform or the project permissions might have been changed.`, {title: `Video not found`});
             }
         }).catch(error => {
             return error;
@@ -322,7 +326,7 @@ const Wistia = (props: any) => {
                             </>
                         }
                         {status && !retry &&
-                            <Paragraph>{status}</Paragraph>
+                            <Paragraph style={{color: tokens.gray600}}>{status}</Paragraph>
                         }
                     </Flex>
                 </Box>}
