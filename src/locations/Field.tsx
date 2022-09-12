@@ -11,7 +11,7 @@ import {
     Text
 } from '@contentful/f36-components';
 import {DeleteIcon, AssetIcon, CycleIcon, InfoCircleIcon} from '@contentful/f36-icons';
-// import tokens from "@contentful/f36-tokens";
+import tokens from "@contentful/f36-tokens";
 import {FieldExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */useFieldValue, useSDK} from '@contentful/react-apps-toolkit';
 import Wistia from '../features/wistia/Wistia';
@@ -45,7 +45,7 @@ const Field = () => {
         await setMedia(result);
     }
 
-    const handleRemove= () => {
+    const handleRemove = () => {
         ModalLauncher.open(({isShown, onClose}) => {
             return (
                 <ModalConfirm
@@ -54,7 +54,7 @@ const Field = () => {
                     isShown={isShown}
                     allowHeightOverflow={true}
                     onCancel={() => {
-                        onClose('Video removal cancelled');
+                        onClose('No video data was removed.');
                     }}
                     onConfirm={() => {
                         setMedia(undefined);
@@ -66,14 +66,14 @@ const Field = () => {
                 </ModalConfirm>
             );
         }).then((result) => {
-            if (result.includes('cancelled')) {
-                Notification.warning(result);
+            if (result.includes('No video data was removed')) {
+                Notification.success(result);
             } else {
                 Notification.success(result);
                 setTimeout(() => {
                     Notification.closeAll();
                     window.location.reload();
-                },3000);
+                }, 3000);
             }
         });
     }
@@ -89,52 +89,42 @@ const Field = () => {
     }
 
     return (
-        <Box>
-            <Wistia viewVideosList={viewVideosList} />
+        <>
+            <Wistia viewVideosList={viewVideosList}/>
 
             {media !== undefined &&
-                <Preview media={media}/>
+                <>
+                    <Preview media={media}/>
+                    <Stack
+                        marginTop="spacingS"
+                        spacing="spacingM"
+                        justifyContent="space-evenly">
+                        <ButtonGroup variant="spaced" spacing="spacing2Xs">
+                            <Button
+                                aria-label="Set Thumbnail"
+                                startIcon={<AssetIcon/>}
+                                variant="transparent"
+                                onClick={() => console.log('Work in progress...')}>
+                                Set Thumbnail</Button>
+                            <InfoIconTooltip
+                                note="The thumbnail is what viewers see before they press play. By default, Wistia selects the middle frame of the video. If you want to replace it with an alternative shot, pause the video on the desired frame and hit this link."
+                                id="set-thumbnail"/>
+                        </ButtonGroup>
+                        <ButtonGroup variant="spaced" spacing="spacing2Xs">
+                            <Button
+                                aria-label="Remove Video"
+                                startIcon={<DeleteIcon/>}
+                                variant="transparent"
+                                onClick={() => handleRemove()}>
+                                Remove Video</Button>
+                            <InfoIconTooltip
+                                note="To remove the attached video or attach a video from Wistia, press on this link. Removing the video, only removes it from Contentful, but it continues to live in Wistia. To remove the video completely, contact your colleague with access to our Wistia account."
+                                id="remove-video"/>
+                        </ButtonGroup>
+                    </Stack>
+                </>
             }
-            {media !== undefined && <Box>
-                <Stack
-                    spacing="spacingM"
-                    justifyContent="space-evenly">
-                    <ButtonGroup variant="spaced" spacing="spacing2Xs">
-                        <Button
-                            aria-label="Replace Video File"
-                            startIcon={<CycleIcon/>}
-                            variant="transparent"
-                            isDisabled={true}>
-                            Replace Video File
-                        </Button>
-                        <InfoIconTooltip note="When a media is replaced, the app overwrites the original video file but keeps all the other data -- name, description, thumbnail, stats -- unchanged. Use this feature to update a video with a slight editing tweak."
-                                         id="replace-video-file"/>
-                    </ButtonGroup>
-                    <ButtonGroup variant="spaced" spacing="spacing2Xs">
-                        <Button
-                            aria-label="Set Thumbnail"
-                            startIcon={<AssetIcon/>}
-                            variant="transparent"
-                            onClick={() => console.log('Work in progress...')}>
-                            Set Thumbnail</Button>
-                        <InfoIconTooltip
-                            note="The thumbnail is what viewers see before they press play. By default, Wistia selects the middle frame of the video. If you want to replace it with an alternative shot, pause the video on the desired frame and hit this link."
-                            id="set-thumbnail"/>
-                    </ButtonGroup>
-                    <ButtonGroup variant="spaced" spacing="spacing2Xs">
-                        <Button
-                            aria-label="Remove Video"
-                            startIcon={<DeleteIcon/>}
-                            variant="transparent"
-                            onClick={() => handleRemove()}>
-                            Remove Video</Button>
-                        <InfoIconTooltip
-                            note="To remove the attached video or attach a video from Wistia, press on this link. Removing the video, only removes it from Contentful, but it continues to live in Wistia. To remove the video completely, contact your colleague with access to our Wistia account."
-                            id="remove-video"/>
-                    </ButtonGroup>
-                </Stack>
-            </Box>}
-        </Box>
+        </>
     );
 };
 
