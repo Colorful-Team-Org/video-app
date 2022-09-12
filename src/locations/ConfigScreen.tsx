@@ -1,5 +1,5 @@
 import {setup} from '@contentful/dam-app-base';
-import logo from '../temp/wistia-flags_color.png';
+import logo from '../features/wistia/assets/wistia-flags_color.png';
 
 const validateParameters = ({accessToken, projectId}: any) => {
     if (accessToken === undefined) {
