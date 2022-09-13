@@ -19,7 +19,7 @@ const Preview = ({media}: any) => {
                     .then(response => {
                         const contentType = response.headers.get('content-type');
                         // TODO: remove console.log
-                        console.log('contentType', contentType);
+                        console.log('Preview contentType: ', contentType);
 
                         if (contentType && contentType.indexOf('application/json') !== -1) {
                             return response.json();
@@ -28,11 +28,11 @@ const Preview = ({media}: any) => {
                         return response;
                     }).then(data => {
                         //TODO: remove console.log
-                        console.log('data', data);
+                        console.log('Preview data: ', data);
 
                         //TODO: Handle errors
                         if (data.error === true) {
-                            console.log('data.error', data.error);
+                            console.log('Preview data.error: ', data.error);
                             setPreview(false);
                             return data;
                         }
@@ -58,14 +58,14 @@ const Preview = ({media}: any) => {
                     style={{
                         width: "100%",
                         height: "395px",
-                        textAlign: "center",
-                        backgroundColor: tokens.red100,
-                        border: `1px solid ${tokens.red200}`,
+                        backgroundColor: '#f7f9fa',
+                        textAlign: 'center',
+                        border: '1px dashed rgb(174, 193, 204)',
                         borderRadius: tokens.borderRadiusMedium,
                     }}>
                     <Box style={{width: '75%'}}>
                         <Subheading
-                            style={{color: tokens.red400}}
+                            style={{color: tokens.red600}}
                         > Video not found</Subheading>
                         <Paragraph
                             style={{color: tokens.gray600}}
