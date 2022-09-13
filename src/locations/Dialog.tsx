@@ -25,7 +25,7 @@ const Dialog = () => {
     const [results, setResults] = useState<Medias[] | undefined>();
 
     const fetchMedia = async () => {
-        const response = await fetch(`https://api.wistia.com/v1/medias.json?project_id=${sdk.parameters.installation.projectId}`, {
+        const response = await fetch(`https://api.wistia.com/v1/medias.json?type=Video&project_id=${sdk.parameters.installation.projectId}`, {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${sdk.parameters.installation.accessToken}`,
