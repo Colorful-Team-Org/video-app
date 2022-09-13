@@ -4,12 +4,13 @@ import {
     Spinner,
     Stack,
     Heading,
-    Flex, Box, FormControl, TextInput, Paragraph, Text,
+    Flex, Box, FormControl, TextInput, Paragraph, Text, Subheading,
 } from '@contentful/f36-components';
 import {Notification} from '@contentful/f36-notification';
 import {DialogExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */ useSDK} from '@contentful/react-apps-toolkit';
 import {Medias} from "../utils/types";
+import tokens from "@contentful/f36-tokens";
 
 const Dialog = () => {
     const sdk = useSDK<DialogExtensionSDK>();
@@ -143,7 +144,19 @@ const Dialog = () => {
                                 {medias.name}</Text>
                         </Flex>
                     ))) : (
-                    <Paragraph>No media found</Paragraph>
+                    <Flex
+                        fullWidth={true}
+                        flexDirection="column"
+                        justifyContent="center"
+                        alignItems="center">
+                        <Subheading
+                            style={{color: tokens.gray600}}>
+                            No results found</Subheading>
+                        <Paragraph
+                            style={{color: tokens.gray600}}>
+                            Check your search for typos or try a more generic
+                            word.</Paragraph>
+                    </Flex>
                 )}
             </Flex>
         </Box>
