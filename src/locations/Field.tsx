@@ -60,24 +60,15 @@ const Field = () => {
                     }}
                     onConfirm={() => {
                         setMedia(undefined);
-                        onClose('Video data removed, this action cannot be undone. Note, the file is still available in your Wistia project.')
+                        sdk.notifier.success('Video data removed, this action cannot be undone. Uploader was reset to default. Note, the file is still available in your Wistia project.');
+                        onClose(()=> window.location.reload());
                     }}
                     confirmLabel="Remove the video data"
                     cancelLabel="Keep the video">
                     <Text>Do you really want to remove this video data?</Text>
                 </ModalConfirm>
             );
-        }).then((result) => {
-            if (result.includes('No video data was removed')) {
-                Notification.success(result);
-            } else {
-                Notification.success(result);
-                setTimeout(() => {
-                    Notification.closeAll();
-                    window.location.reload();
-                }, 3000);
-            }
-        });
+        }).then((result) => result ());
     }
 
     const InfoIconTooltip = ({note, id}: any) => {
@@ -178,7 +169,7 @@ const Field = () => {
                             <Button
                                 aria-label="Set Thumbnail"
                                 startIcon={<AssetIcon/>}
-                                variant="transparent"
+                                variant="secondary"
                                 onClick={() => {
                                     setNewThumbnail()
                                 }}>
@@ -194,7 +185,7 @@ const Field = () => {
                             <Button
                                 aria-label="Remove Video"
                                 startIcon={<DeleteIcon/>}
-                                variant="transparent"
+                                variant="secondary"
                                 onClick={() => handleRemove()}>
                                 Remove Video</Button>
                             <InfoIconTooltip
