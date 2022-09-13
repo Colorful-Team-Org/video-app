@@ -1,27 +1,29 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Stack,
-    Box,
     Flex,
     Tooltip,
     Button,
     ButtonGroup,
     ModalLauncher,
     ModalConfirm,
-    Text
+    Text, Spinner
 } from '@contentful/f36-components';
-import {DeleteIcon, AssetIcon, CycleIcon, InfoCircleIcon} from '@contentful/f36-icons';
-import tokens from "@contentful/f36-tokens";
+import {DeleteIcon, AssetIcon, InfoCircleIcon} from '@contentful/f36-icons';
 import {FieldExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */useFieldValue, useSDK} from '@contentful/react-apps-toolkit';
 import Wistia from '../features/wistia/Wistia';
 import Preview from "../features/wistia/components/Preview";
 import {Notification} from '@contentful/f36-notification';
+import {Medias} from "../utils/types";
+
 
 const Field = () => {
     const sdk = useSDK<FieldExtensionSDK>();
 
-    const [media, setMedia] = useFieldValue();
+    const [media, setMedia] = useFieldValue<Medias[] | undefined>();
+    const [timeChange, setTimeChange] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         sdk.window.startAutoResizer();
@@ -88,6 +90,79 @@ const Field = () => {
         )
     }
 
+    const setNewThumbnail = async () => {
+        setIsLoading(true);
+        // Extracting the thumbnail
+        // https://wistia.com/support/developers/extracting-thumbnails#extracting-the-thumbnail
+        //@ts-ignore
+        const embedAssetUrl = `${(media.assets[0].url).split('.bin')[0]}.jpg?video_still_time=${timeChange}`
+
+        //TODO: DRY - optimize Thumbnail extraction
+
+        const newThumbnail = await fetch(`https://upload.wistia.com?project_id=${sdk.parameters.installation.projectId}`, {
+            method: 'POST',
+            cache: 'no-cache',
+            headers: {
+                Authorization: `Bearer ${sdk.parameters.installation.accessToken}`,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `url=${embedAssetUrl}`,
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                setIsLoading(false);
+                return data;
+            }).catch(error => {
+                console.log('Asset error: ', error);
+            });
+
+        //@ts-ignore
+        await fetch(`https://api.wistia.com/v1/medias/${media.hashed_id}.json?new_still_media_id=${newThumbnail.hashed_id}`, {
+            method: 'PUT',
+            headers: {
+                Authorization: `Bearer ${sdk.parameters.installation.accessToken}`,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).then(response => {
+            if (response.ok) {
+                Notification.success('Thumbnail has been updated.', {title: 'Success!'});
+                setTimeout(() => {
+                    Notification.closeAll();
+                    window.location.reload();
+                }, 3000);
+            }
+        }).catch(error => {
+            return error
+        });
+    }
+
+    useEffect(() => {
+        if (media !== undefined) {
+
+            // Get time change for thumbnail extraction
+            window._wq = window._wq || [];
+            window._wq.push({
+                //@ts-ignore
+                id: media.hashed_id, onReady: function (video: any) {
+                    console.log('Media', media);
+                    console.log("Preview Video handle: ", video);
+
+                    video.bind("pause", function () {
+                        console.log(`Paused at ${video.time()} seconds`);
+                        setTimeChange(video.time());
+                    });
+
+                    video.bind("timechange", function () {
+                        console.log(`Time changed to: ${video.time()} seconds`);
+                        setTimeChange(video.time());
+                    });
+
+                }
+            });
+        }
+    }, [media]);
+
     return (
         <>
             <Wistia viewVideosList={viewVideosList}/>
@@ -104,8 +179,13 @@ const Field = () => {
                                 aria-label="Set Thumbnail"
                                 startIcon={<AssetIcon/>}
                                 variant="transparent"
-                                onClick={() => console.log('Work in progress...')}>
-                                Set Thumbnail</Button>
+                                onClick={() => {
+                                    setNewThumbnail()
+                                }}>
+                                {isLoading ? (
+                                    <>Thumbnail loading{(' ')}<Spinner size="medium" variant="primary"/></>
+                                ) : 'Set Thumbnail'}
+                            </Button>
                             <InfoIconTooltip
                                 note="The thumbnail is what viewers see before they press play. By default, Wistia selects the middle frame of the video. If you want to replace it with an alternative shot, pause the video on the desired frame and hit this link."
                                 id="set-thumbnail"/>
