@@ -1,9 +1,12 @@
 import {Box, IconButton, ModalLauncher, ModalConfirm, Text, Tooltip} from '@contentful/f36-components';
 import {CloseTrimmedIcon} from '@contentful/f36-icons';
 import {Notification} from "@contentful/f36-notification";
+import {useSDK} from "@contentful/react-apps-toolkit";
 import React from "react";
+import {FieldExtensionSDK} from "@contentful/app-sdk";
 
 const CancelUpload = () => {
+    const sdk = useSDK<FieldExtensionSDK>();
 
     const handleCancel = () => {
         ModalLauncher.open(({isShown, onClose}) => {
@@ -18,7 +21,7 @@ const CancelUpload = () => {
                     }}
                     onConfirm={() => {
                         window.wistiaUploader.cancel();
-                        onClose('Video upload cancelled')
+                        onClose('Video upload cancelled');
                     }}
                     confirmLabel="Cancel upload anyway"
                     cancelLabel="Continue uploading">
@@ -27,18 +30,8 @@ const CancelUpload = () => {
             );
         }).then((result) => {
             if (result.includes('cancelled')) {
-                Notification.warning(result, {
-                    cta: {
-                        label: 'Try again',
-                        textLinkProps: {
-                            variant: 'primary',
-                            onClick: () => {
-                                Notification.closeAll();
-                                window.location.reload();
-                            }
-                        },
-                    },
-                });
+                sdk.notifier.warning(result);
+                window.location.reload();
             } else {
                 Notification.success(result);
             }
