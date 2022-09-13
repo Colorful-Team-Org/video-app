@@ -17,25 +17,23 @@ const CancelUpload = () => {
                     isShown={isShown}
                     allowHeightOverflow={true}
                     onCancel={() => {
-                        onClose('Video upload continues...')
+                        onClose(() => {
+                            Notification.success('You can track you upload progress.', {title: 'Upload continues'});
+                        });
                     }}
                     onConfirm={() => {
                         window.wistiaUploader.cancel();
-                        onClose('Video upload cancelled');
+                        sdk.notifier.success('You have cancelled your video upload. Uploader was reset to default.');
+                        onClose(() => {
+                            window.location.reload();
+                        });
                     }}
                     confirmLabel="Cancel upload anyway"
                     cancelLabel="Continue uploading">
                     <Text>Do you really want to cancel uploading this video?</Text>
                 </ModalConfirm>
             );
-        }).then((result) => {
-            if (result.includes('cancelled')) {
-                sdk.notifier.warning(result);
-                window.location.reload();
-            } else {
-                Notification.success(result);
-            }
-        });
+        }).then((result) => result());
     }
 
     return (
