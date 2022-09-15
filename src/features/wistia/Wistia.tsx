@@ -17,7 +17,7 @@ import {
 } from "@contentful/f36-components";
 import {Notification} from '@contentful/f36-notification';
 import tokens from "@contentful/f36-tokens";
-import {EditIcon, ExternalLinkTrimmedIcon, DoneIcon} from '@contentful/f36-icons';
+import {EditIcon, ExternalLinkIcon, DoneIcon} from '@contentful/f36-icons';
 import CancelUpload from "./components/CancelUpload";
 import ProgressBar from "./components/ProgressBar";
 import loadScript from '../../utils/loadScript';
@@ -47,14 +47,12 @@ const Wistia = (props: any) => {
 
     const [status, setStatus] = useState("Drag and drop a video file to upload...");
     const [progress, setProgress] = useState("");
-    const [retry, setRetry] = useState(false);
     const [uploadActive, setUploadActive] = useState(false);
     const [editNameShow, setEditNameShow] = useState(false);
 
     const [fileName, setFileName] = useState('');
     const [wistiaUrl, setWistiaUrl] = useState('');
     const [media, setMedia] = useFieldValue<Medias[] | undefined>();
-
 
     const filterErrorMessage = (error: string, query: string) => {
         return error.includes(query);
@@ -75,7 +73,6 @@ const Wistia = (props: any) => {
         setStatus('');
         setFileName('');
         setUploadActive(false);
-        setRetry(true);
     }
 
     const uploadFailed = useCallback((file: any, errorResponse: any) => {
@@ -85,7 +82,7 @@ const Wistia = (props: any) => {
         const res2 = error.lastIndexOf("\"}");
         const response = error.substring(res1 + 2, res2);
 
-        //TODO: remove console.log(<error filter>)
+        //TODO: update error message
         if (filterErrorMessage(error, '401')) {
             console.log(`Upload failed: 401, access denied. ${response}`);
         }
@@ -106,6 +103,7 @@ const Wistia = (props: any) => {
                     variant: 'primary',
                     onClick: () => {
                         Notification.closeAll();
+                        //TODO: reset uploader
                         window.location.reload();
                     }
                 },
@@ -115,13 +113,11 @@ const Wistia = (props: any) => {
         setStatus('');
         setFileName('');
         setUploadActive(false);
-        setRetry(true);
     }, []);
 
     const uploadSuccess = useCallback((file: any, media: any) => {
         setStatus('');
         setUploadActive(false);
-        setRetry(true);
 
         if (media !== undefined) {
             const setMediaRef = async () => {
@@ -142,13 +138,13 @@ const Wistia = (props: any) => {
             setMediaRef();
         }
         // TODO: remove console.log
-        console.log(`Upload media`, media)
+        console.log(`✅ Uploaded `, media)
 
         return window.wistiaUploader.unbind;
     }, [setMedia]);
 
     const updateName = async (media: any) => {
-        const response = await fetch(`https://api.wistia.com/v1/medias/${media.hashed_id}.json?name=${fileName}`, {
+        await fetch(`https://api.wistia.com/v1/medias/${media.hashed_id}.json?name=${fileName}`, {
             method: 'PUT',
             headers: {
                 Authorization: `Bearer ${sdk.parameters.installation.accessToken}`,
@@ -156,7 +152,7 @@ const Wistia = (props: any) => {
             }
         }).then(response => {
             if (response.status === 200) {
-                console.log(`Name updated successfully, response: `, response);
+                console.log(`✅ Name updated successfully, response: `, response);
                 sdk.entry.fields.externalVideo.setValue({...media, name: fileName})
                 return response.json();
             }
@@ -189,13 +185,7 @@ const Wistia = (props: any) => {
         }).catch((error) => {
             console.log('Error loading Wistia script', error);
         });
-
-        return () => {
-            window._wapiq.push({
-                revoke: uploaderConfig,
-            });
-        };
-    }, [uploadFailed, uploadSuccess]);
+    },[]);
 
     useEffect(() => {
         if (media !== undefined) {
@@ -216,7 +206,8 @@ const Wistia = (props: any) => {
                     <>
                         <Heading style={{margin: 0}}>{fileName}</Heading>
                         {fileName !== '' &&
-                            <Tooltip content={uploadActive ? 'You cannot edit the name while uploading' : 'Edit video name'}>
+                            <Tooltip
+                                content={uploadActive ? 'You cannot edit the name while uploading' : 'Edit video name'}>
                                 <IconButton
                                     aria-label="Edit Video Name"
                                     icon={<EditIcon/>}
@@ -271,11 +262,13 @@ const Wistia = (props: any) => {
                         minWidth: '118px',
                     }}>
                         {wistiaUrl &&
-                            <TextLink href={wistiaUrl} target="_blank">
-                                <Stack spacing="spacing2Xs">
-                                    <ExternalLinkTrimmedIcon/>
-                                    Open in Wistia
-                                </Stack>
+                            <TextLink
+                                icon={<ExternalLinkIcon/>}
+                                alignIcon="end"
+                                href={wistiaUrl} target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Open in Wistia
                             </TextLink>
                         }
                     </Box>
@@ -302,7 +295,7 @@ const Wistia = (props: any) => {
                             borderRadius: tokens.borderRadiusMedium,
                         }}
                     >
-                        {!uploadActive && !retry &&
+                        {!uploadActive &&
                             <Stack spacing="spacingS" margin="spacingM">
                                 <Button
                                     id="wistia_upload_button"
@@ -316,18 +309,13 @@ const Wistia = (props: any) => {
                                 </Button>
                             </Stack>
                         }
-                        {retry &&
-                            <ButtonRetry progress={progress}/>
-                        }
                         {uploadActive && progress &&
                             <>
                                 <Text><strong>{progress} uploaded</strong></Text>
                                 <ProgressBar progress={progress}/>
                             </>
                         }
-                        {status && !retry &&
-                            <Paragraph style={{color: tokens.gray600}}>{status}</Paragraph>
-                        }
+                        <Paragraph style={{color: tokens.gray600}}>{status}</Paragraph>
                     </Flex>
                 </Box>}
         </>
