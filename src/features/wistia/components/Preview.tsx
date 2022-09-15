@@ -1,62 +1,51 @@
 import {Box, Flex, Paragraph, Subheading} from "@contentful/f36-components";
 import React, {useEffect, useState} from "react";
 import tokens from "@contentful/f36-tokens";
+import {useSDK} from "@contentful/react-apps-toolkit";
+import {FieldExtensionSDK} from "@contentful/app-sdk";
 
 
 const Preview = ({media}: any) => {
 
+    const sdk = useSDK<FieldExtensionSDK>();
+
     const [iframeSrc, setIframeSrc] = useState('');
     const [preview, setPreview] = useState(true);
 
+    const checkMedia = async (media: any) => {
+        await fetch(`https://api.wistia.com/v1/medias/${media.hashed_id}.json`, {
+            method: 'GET',
+            headers: {'Authorization': `Bearer ${sdk.parameters.installation.accessToken}`}
+        })
+            .then(response => {
+                if (!response.ok) {
+                    setPreview(false);
+                    if (response.status === 404) {
+                        console.error('❌ Video not found, 404.');
+                    }
+                }
+
+                setIframeSrc(`https://fast.wistia.net/embed/iframe/${media.hashed_id}`);
+
+                return response.json();
+            }).catch(error => {
+                console.error('Error: ', error);
+            });
+    }
+
     useEffect(() => {
-        if (media !== undefined && media.hashed_id !== undefined) {
-
-            const checkMedia = async (mediaUrl: string) => {
-                // TODO: remove console.log
-                console.log('Preview URL: ', mediaUrl);
-
-                await fetch(mediaUrl, {method: 'GET'})
-                    .then(response => {
-                        const contentType = response.headers.get('content-type');
-                        // TODO: remove console.log
-                        console.log('Preview contentType: ', contentType);
-
-                        if (contentType && contentType.indexOf('application/json') !== -1) {
-                            return response.json();
-                        }
-
-                        return response;
-                    }).then(data => {
-                        //TODO: remove console.log
-                        console.log('Preview data: ', data);
-
-                        //TODO: Handle errors
-                        if (data.error === true) {
-                            console.log('Preview data.error: ', data.error);
-                            setPreview(false);
-                            return data;
-                        }
-
-                        setIframeSrc(data.url);
-                        return data;
-                    }).catch(error => {
-                        console.log('error', error);
-                        return error;
-                    });
-            }
-            checkMedia(`https://fast.wistia.net/embed/iframe/${media.hashed_id}`);
-        }
+        checkMedia(media);
     }, [media]);
 
     return (
         <>
             {!preview ? (
                 <Flex
+                    fullWidth={true}
                     justifyContent="center"
                     alignItems="center"
                     flexDirection="column"
                     style={{
-                        width: "100%",
                         height: "395px",
                         backgroundColor: '#f7f9fa',
                         textAlign: 'center',
