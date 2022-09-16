@@ -11,6 +11,7 @@ import {DialogExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */ useSDK} from '@contentful/react-apps-toolkit';
 import {Medias} from "../utils/types";
 import tokens from "@contentful/f36-tokens";
+import wistiaFetch from "../utils/wistiaFetch";
 
 const Dialog = () => {
     const sdk = useSDK<DialogExtensionSDK>();
@@ -20,62 +21,56 @@ const Dialog = () => {
         return () => sdk.window.stopAutoResizer();
     }, [sdk]);
 
-    const [media, setMedia] = useState<Medias[] | undefined>();
+    const [mediaList, setMediaList] = useState<Medias[] | undefined>();
     const [selected, setSelected] = useState(false)
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState<Medias[] | undefined>();
+    const [queryResults, setQueryResults] = useState<Medias[] | undefined>();
 
-    const fetchMedia = async () => {
-        const response = await fetch(`https://api.wistia.com/v1/medias.json?type=Video&project_id=${sdk.parameters.installation.projectId}`, {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${sdk.parameters.installation.accessToken}`,
-            }
-        }).then(response => {
-            if (response.status === 200) {
-                return response.json();
-            }
-
-            if (response.status === 401) {
-                // sdk.notifier.error('Unauthorized. Please check your access token.');
-                Notification.error('Couldn\'t load videos list. Please check your access token.', {title: 'Unauthorized, 401.'});
-                setTimeout(() => sdk.close(), 5000);
-            }
-
-            if (response.status === 404) {
-                // sdk.notifier.error('Unauthorized. Please check your access token.');
-                Notification.error('Couldn\'t load videos list. Please check your Project ID.', {title: 'Project not found, 404.'});
-                setTimeout(() => sdk.close(), 5000);
-            }
-        }).catch(error => {
-            return error;
-        });
-        setMedia(response);
-        setResults(response);
-    }
+    const getMediaList = wistiaFetch(
+        `https://api.wistia.com/v1/medias.json?type=Video&project_id=${sdk.parameters.installation.projectId}`,
+        `GET`,
+        `application/json`,
+        `Bearer ${sdk.parameters.installation.accessToken}`,
+        null
+    );
 
     useEffect(() => {
-        fetchMedia();
-    }, []);
+        getMediaList.then((data) => {
+            data.json().then((data) => {
+                setMediaList(data);
+                setQueryResults(data);
+            });
 
-    const filterMedia = (query: string) => {
+            if (!data.ok) {
+                if (data.status === 401) {
+                    Notification.error('Couldn\'t load videos list. Please check your access token.', {title: 'Unauthorized, 401.'});
+                }
+                if (data.status === 404) {
+                    Notification.error('Couldn\'t load videos list. Please check your Project ID.', {title: 'Project not found, 404.'});
+                }
+                setTimeout(() => sdk.close('error'), 6000);
+            }
+        });
+    },[]);
+
+    const filterMediaList = (query: string) => {
         if (query.length > 0) {
             // @ts-ignore
             const result: any = media.filter((media: Medias) => {
                 return media.name.toLowerCase().includes(query.toLowerCase());
             });
-            setResults(result);
+            setQueryResults(result);
         } else if (query.length === 0) {
-            setResults(media);
+            setQueryResults(mediaList);
         }
     }
 
     useEffect(() => {
-        filterMedia(query);
+        filterMediaList(query);
     }, [query]);
 
 
-    if (!media) {
+    if (!mediaList) {
         return (
             <Stack
                 flexDirection="column"
@@ -107,8 +102,8 @@ const Dialog = () => {
                 flexWrap="wrap"
                 justifyContent="flex-start"
                 gap="1.875rem">
-                {results && results.length > 0 ? (
-                    results.map((medias: any) => (
+                {queryResults && queryResults.length > 0 ? (
+                    queryResults.map((medias: any) => (
                         <Flex key={medias.id}
                               flexDirection="column"
                               flexWrap="wrap"
