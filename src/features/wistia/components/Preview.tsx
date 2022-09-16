@@ -3,6 +3,7 @@ import React, {useEffect, useState} from "react";
 import tokens from "@contentful/f36-tokens";
 import {useSDK} from "@contentful/react-apps-toolkit";
 import {FieldExtensionSDK} from "@contentful/app-sdk";
+import wistiaFetch from "../../../utils/wistiaFetch";
 
 
 const Preview = ({media}: any) => {
@@ -12,29 +13,32 @@ const Preview = ({media}: any) => {
     const [iframeSrc, setIframeSrc] = useState('');
     const [preview, setPreview] = useState(true);
 
-    const checkMedia = async (media: any) => {
-        await fetch(`https://api.wistia.com/v1/medias/${media.hashed_id}.json`, {
-            method: 'GET',
-            headers: {'Authorization': `Bearer ${sdk.parameters.installation.accessToken}`}
-        })
-            .then(response => {
-                if (!response.ok) {
-                    setPreview(false);
-                    if (response.status === 404) {
-                        console.error('❌ Video not found, 404.');
-                    }
-                }
-
-                setIframeSrc(`https://fast.wistia.net/embed/iframe/${media.hashed_id}`);
-
-                return response.json();
-            }).catch(error => {
-                console.error('Error: ', error);
-            });
-    }
+    const getMediaItem = wistiaFetch(
+        `https://api.wistia.com/v1/medias/${media.hashed_id}.json`,
+        `GET`,
+        `application/json`,
+        `Bearer ${sdk.parameters.installation.accessToken}`,
+        null
+    );
 
     useEffect(() => {
-        checkMedia(media);
+        getMediaItem.then((data) => {
+            if (!data.ok) {
+                setPreview(false);
+                if (data.status === 404) {
+                    console.error('❌ Video not found, 404.');
+                }
+            }
+        }).catch((error) => {
+            throw new Error(error);
+        });
+    }, []);
+
+    useEffect(() => {
+        if (media !== undefined) {
+            setIframeSrc(`https://fast.wistia.net/embed/iframe/${media.hashed_id}`);
+            setPreview(true);
+        }
     }, [media]);
 
     return (
