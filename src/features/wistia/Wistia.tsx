@@ -22,6 +22,7 @@ import CancelUpload from "./components/CancelUpload";
 import ProgressBar from "./components/ProgressBar";
 import loadScript from '../../utils/loadScript';
 import {Medias} from "../../utils/types";
+import wistiaFetch from "../../utils/wistiaFetch";
 
 declare global {
     interface Window {
@@ -69,13 +70,13 @@ const Wistia = (props: any) => {
         setProgress(Math.round(progress * 100) + "%");
     }
 
-    const uploadCancelled = (file: any) => {
+    const uploadCancelled = () => {
         setStatus('');
         setFileName('');
         setUploadActive(false);
     }
 
-    const uploadFailed = useCallback((file: any, errorResponse: any) => {
+    const uploadFailed = (file: any, errorResponse: any) => {
         const error = errorResponse.error.message.toString();
 
         const res1 = error.lastIndexOf(":\"");
@@ -113,57 +114,51 @@ const Wistia = (props: any) => {
         setStatus('');
         setFileName('');
         setUploadActive(false);
-    }, []);
+    }
 
-    const uploadSuccess = useCallback((file: any, media: any) => {
-        setStatus('');
-        setUploadActive(false);
+    const uploadSuccess = (file: any, media: any) => {
+        console.log(`✅ Uploaded `, media);
 
         if (media !== undefined) {
-            const setMediaRef = async () => {
-                const response = await fetch(`https://api.wistia.com/v1/medias/${media.id}.json`, {
-                    method: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${sdk.parameters.installation.accessToken}`
-                    }
-                }).then(response => {
-                    if (response.status === 200) {
-                        return response.json();
-                    }
-                }).catch(error => {
-                    return error;
+            getMediaData(media).then((data) => {
+                data.json().then((data) => {
+                    setMedia(data);
+                    console.log(`💾 Saved: ${data.name} (hashed_id: ${data.hashed_id}) `, data);
                 });
-                setMedia(response);
-            }
-            setMediaRef();
+            });
         }
-        // TODO: remove console.log
-        console.log(`✅ Uploaded `, media)
+        setUploadActive(false);
 
         return window.wistiaUploader.unbind;
-    }, [setMedia]);
+    }
 
-    const updateName = async (media: any) => {
-        await fetch(`https://api.wistia.com/v1/medias/${media.hashed_id}.json?name=${fileName}`, {
-            method: 'PUT',
-            headers: {
-                Authorization: `Bearer ${sdk.parameters.installation.accessToken}`,
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        }).then(response => {
-            if (response.status === 200) {
-                console.log(`✅ Name updated successfully, response: `, response);
-                sdk.entry.fields.externalVideo.setValue({...media, name: fileName})
-                return response.json();
-            }
+    const getMediaData = (media: any) => wistiaFetch(
+        `https://api.wistia.com/v1/medias/${media.id}.json`,
+        'GET',
+        'application/json',
+        `Bearer ${sdk.parameters.installation.accessToken}`,
+        null);
 
-            if (response.status === 404) {
+    const updateName = (media: any) => wistiaFetch(
+        `https://api.wistia.com/v1/medias/${media.hashed_id}.json?name=${fileName}`,
+        'PUT',
+        'application/x-www-form-urlencoded',
+        `Bearer ${sdk.parameters.installation.accessToken}`,
+        null
+    ).then(data => {
+        data.json().then((data) => {
+            console.log(`✅ Name updated successfully, response: `, data);
+            sdk.entry.fields.externalVideo.setValue({...media, name: fileName})
+        });
+
+        if (!data.ok) {
+            console.log(`❌ Error updating name, response: `, data);
+
+            if (data.status === 404) {
                 Notification.error(`The video might have been removed from the Wistia platform or the project permissions might have been changed.`, {title: `Video not found`});
             }
-        }).catch(error => {
-            return error;
-        });
-    }
+        }
+    });
 
 
     useEffect(() => {
@@ -193,7 +188,6 @@ const Wistia = (props: any) => {
             setFileName(media.name);
             // @ts-ignore
             setWistiaUrl(`https://contentful.wistia.com/medias/${media.hashed_id}`);
-
         } else {
             setFileName('');
         }
