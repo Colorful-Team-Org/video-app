@@ -58,9 +58,8 @@ const Field = () => {
                         onClose('No video data was removed.');
                     }}
                     onConfirm={() => {
-                        setMedia(undefined);
-                        sdk.notifier.success('Video data removed, this action cannot be undone. Uploader was reset to default. Note, the file is still available in your Wistia project.');
-                        onClose(() => window.location.reload());
+                        Notification.success('This action cannot be undone. Note, the file is still available in your Wistia project.', {title: 'Video data removed!'});
+                        onClose(() => setMedia(undefined));
                     }}
                     confirmLabel="Remove the video data"
                     cancelLabel="Keep the video">

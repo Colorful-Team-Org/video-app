@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useFieldValue, useSDK} from '@contentful/react-apps-toolkit';
 import {FieldExtensionSDK} from "@contentful/app-sdk";
 import {
@@ -32,10 +32,8 @@ declare global {
     }
 }
 
-const Wistia = (props: any) => {
+const Wistia = ({ viewVideosList }: any) => {
     const sdk = useSDK<FieldExtensionSDK>();
-
-    const {viewVideosList} = props;
 
     const uploaderConfig = {
         accessToken: sdk.parameters.installation.accessToken,
@@ -46,8 +44,8 @@ const Wistia = (props: any) => {
         button: "wistia_upload_button",
     }
 
-    const [status, setStatus] = useState("Drag and drop a video file to upload...");
-    const [progress, setProgress] = useState("");
+    const [status, setStatus] = useState('');
+    const [progress, setProgress] = useState('');
     const [uploadActive, setUploadActive] = useState(false);
     const [editNameShow, setEditNameShow] = useState(false);
 
@@ -105,7 +103,7 @@ const Wistia = (props: any) => {
                     onClick: () => {
                         Notification.closeAll();
                         //TODO: reset uploader
-                        window.location.reload();
+                        setMedia(undefined);
                     }
                 },
             }
@@ -163,27 +161,28 @@ const Wistia = (props: any) => {
         }
     });
 
+    const wistiaUploader = () => {
+        window._wapiq = window._wapiq || [];
+        window._wapiq.push(function (W: any) {
+            window.wistiaUploader = new W.Uploader({
+                ...uploaderConfig,
+            });
+            window.wistiaUploader
+                .bind('uploadstart', uploadStart)
+                .bind('uploadprogress', uploadProgress)
+                .bind('uploadcancelled', uploadCancelled)
+                .bind('uploadfailed', uploadFailed)
+                .bind('uploadsuccess', uploadSuccess)
+        })
+    }
 
     useEffect(() => {
-        loadScript('//fast.wistia.com/assets/external/api.js').then(() => {
-            window._wapiq = window._wapiq || [];
-            window._wapiq.push(function (W: any) {
-                window.wistiaUploader = new W.Uploader({
-                    ...uploaderConfig,
-                });
-
-                window.wistiaUploader
-                    .bind('uploadstart', uploadStart)
-                    .bind('uploadprogress', uploadProgress)
-                    .bind('uploadcancelled', uploadCancelled)
-                    .bind('uploadfailed', uploadFailed)
-                    .bind('uploadsuccess', uploadSuccess);
-
+        loadScript('//fast.wistia.com/assets/external/api.js')
+            .then(() => wistiaUploader())
+            .catch((error) => {
+                throw new Error(error);
             });
-        }).catch((error) => {
-            console.log('Error loading Wistia script', error);
-        });
-    },[]);
+    }, [media]);
 
     useEffect(() => {
         if (media !== undefined) {
@@ -312,7 +311,14 @@ const Wistia = (props: any) => {
                                 <ProgressBar progress={progress}/>
                             </>
                         }
-                        <Paragraph style={{color: tokens.gray600}}>{status}</Paragraph>
+                        <Paragraph
+                            style={{color: tokens.gray600}}
+                        >
+                            {status
+                                ? status
+                                : "Drag and drop a video file to upload..."
+                            }
+                        </Paragraph>
                     </Flex>
                 </Box>}
         </>
