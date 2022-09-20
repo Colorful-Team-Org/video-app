@@ -103,7 +103,7 @@ const Wistia = ({ viewVideosList }: any) => {
                     onClick: () => {
                         Notification.closeAll();
                         //TODO: reset uploader
-                        setMedia(undefined);
+                        window.location.reload();
                     }
                 },
             }
@@ -126,6 +126,9 @@ const Wistia = ({ viewVideosList }: any) => {
             });
         }
         setUploadActive(false);
+        setProgress('');
+        setStatus('');
+        setFileName('');
 
         return window.wistiaUploader.unbind;
     }

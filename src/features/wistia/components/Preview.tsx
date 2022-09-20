@@ -10,7 +10,7 @@ const Preview = ({media}: any) => {
 
     const sdk = useSDK<FieldExtensionSDK>();
 
-    const [iframeSrc, setIframeSrc] = useState('');
+    // const [iframeSrc, setIframeSrc] = useState('');
     const [preview, setPreview] = useState(true);
 
     const getMediaItem = wistiaFetch(
@@ -32,11 +32,12 @@ const Preview = ({media}: any) => {
         }).catch((error) => {
             throw new Error(error);
         });
-    }, []);
+    }, [media]);
 
     useEffect(() => {
         if (media !== undefined) {
-            setIframeSrc(`https://fast.wistia.net/embed/iframe/${media.hashed_id}`);
+            // TODO: consider adding iframe as a fallback
+            // setIframeSrc(`https://fast.wistia.net/embed/iframe/${media.hashed_id}`);
             setPreview(true);
         }
     }, [media]);
@@ -70,21 +71,21 @@ const Preview = ({media}: any) => {
                     as="div"
                     id="wistia_upload_preview"
                     style={{
-                        width: "100%",
+                        width: "690px",
                         height: "395px",
+                        overflow: "hidden",
                     }}
                 >
-                    <iframe
-                        src={`${iframeSrc}?controlsVisibleOnLoad=false&smallPlayButton=true`}
-                        title="Wistia Preview"
-                        frameBorder="0"
-                        scrolling="no"
-                        className="wistia_embed"
-                        name="wistia_embed"
-                        allowFullScreen
-                        width="100%"
-                        height="100%"
-                    ></iframe>
+                    <Box
+                        as="div"
+                        className={`wistia_embed wistia_async_${media.hashed_id} controlsVisibleOnLoad=false`}
+                        style={{
+                            width: "690px",
+                            height: "395px",
+                        }}
+                    >
+                        &nbsp;
+                    </Box>
                 </Box>
             )}
         </>);

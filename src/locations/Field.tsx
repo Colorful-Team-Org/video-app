@@ -148,26 +148,26 @@ const Field = () => {
 
     useEffect(() => {
         //@ts-ignore
-        if (media !== undefined && media.status === 'ready') {
-            //@ts-ignore
-            console.log('📺 Media status ', media.status);
-
+        if (media !== undefined) {
             // Get time change for thumbnail extraction
             window._wq = window._wq || [];
             window._wq.push({
                 //@ts-ignore
                 id: media.hashed_id, onReady: function (video: any) {
+                    video.ready(() => {
+                        console.log('🎬 Video is ready');
+                        video.height(395, {constrain: false});
 
-                    video.bind("pause", function () {
-                        console.warn(`⏸ ${video.time()} seconds`);
-                        setTimeChange(video.time());
+                        video.bind("pause", function () {
+                            console.warn(`⏸ ${video.time()} seconds`);
+                            setTimeChange(video.time());
+                        });
+
+                        video.bind("timechange", function () {
+                            console.log(`⏱ ${video.time()} seconds`);
+                            setTimeChange(video.time());
+                        });
                     });
-
-                    video.bind("timechange", function () {
-                        console.log(`⏱ ${video.time()} seconds`);
-                        setTimeChange(video.time());
-                    });
-
                 }
             });
         }
