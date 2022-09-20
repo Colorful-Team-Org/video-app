@@ -148,7 +148,10 @@ const Wistia = (props: any) => {
     ).then(data => {
         data.json().then((data) => {
             console.log(`✅ Name updated successfully, response: `, data);
-            sdk.entry.fields.externalVideo.setValue({...media, name: fileName})
+            setMedia({
+                ...media,
+                name: fileName
+            });
         });
 
         if (!data.ok) {
