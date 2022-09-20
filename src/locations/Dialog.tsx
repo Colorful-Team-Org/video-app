@@ -56,7 +56,7 @@ const Dialog = () => {
     const filterMediaList = (query: string) => {
         if (query.length > 0) {
             // @ts-ignore
-            const result: any = media.filter((media: Medias) => {
+            const result: any = mediaList.filter((media: Medias) => {
                 return media.name.toLowerCase().includes(query.toLowerCase());
             });
             setQueryResults(result);
