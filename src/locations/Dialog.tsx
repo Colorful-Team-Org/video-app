@@ -12,6 +12,7 @@ import { /* useCMA, */ useSDK} from '@contentful/react-apps-toolkit';
 import {Medias} from "../utils/types";
 import tokens from "@contentful/f36-tokens";
 import wistiaFetch from "../utils/wistiaFetch";
+import {timeDuration, timeSince} from "../utils/time";
 
 const Dialog = () => {
     const sdk = useSDK<DialogExtensionSDK>();
@@ -51,7 +52,7 @@ const Dialog = () => {
                 setTimeout(() => sdk.close('error'), 6000);
             }
         });
-    },[]);
+    }, []);
 
     const filterMediaList = (query: string) => {
         if (query.length > 0) {
@@ -68,7 +69,6 @@ const Dialog = () => {
     useEffect(() => {
         filterMediaList(query);
     }, [query]);
-
 
     if (!mediaList) {
         return (
@@ -107,7 +107,8 @@ const Dialog = () => {
                         <Flex key={medias.id}
                               flexDirection="column"
                               flexWrap="wrap"
-                              gap="spacingXs">
+                              style={{position: 'relative'}}
+                        >
                             <AssetCard
                                 type="image"
                                 title={`${medias.name}${
@@ -125,18 +126,66 @@ const Dialog = () => {
                                     sdk.close(medias); // close the dialog and return the selected value
                                 }}
                             />
+                            <Box as="span"
+                                 style={{
+                                     display: 'flex',
+                                     flexDirection: 'row',
+                                     gap: 'spacingXs',
+                                     position: 'absolute',
+                                     right: '0.5rem',
+                                     top: '6rem',
+                                     backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                                     borderRadius: '3px',
+                                     padding: '0 0.125rem',
+                                 }}>
+                                <Text
+                                    fontSize="fontSizeS"
+                                    lineHeight="lineHeightS"
+                                    fontColor="colorWhite"
+                                >
+                                    {timeDuration(medias.duration)}
+                                </Text>
+                            </Box>
+                            <Box as="span"
+                                 style={{
+                                     display: 'flex',
+                                     flexDirection: 'row',
+                                     gap: 'spacingXs',
+                                     position: 'absolute',
+                                     right: '0.5rem',
+                                     top: '0.5rem',
+                                     backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                                     borderRadius: '3px',
+                                     padding: '0 0.125rem',
+                                 }}>
+                                <Text
+                                    fontSize="fontSizeS"
+                                    lineHeight="lineHeightS"
+                                    fontColor="colorWhite"
+                                >
+                                    {timeSince(medias.created)} ago
+                                </Text>
+                            </Box>
                             <Text
-                                fontSize="fontSizeS"
+                                fontSize="fontSizeM"
                                 lineHeight="lineHeightS"
                                 fontColor="gray600"
                                 fontWeight="fontWeightDemiBold"
                                 style={{
+                                    marginTop: '0.25rem',
                                     inlineSize: '200px',
                                     whiteSpace: 'nowrap',
                                     textOverflow: 'ellipsis',
                                     overflow: 'hidden'
                                 }}>
                                 {medias.name}</Text>
+                            <Text
+                                fontSize="fontSizeS"
+                                lineHeight="lineHeightS"
+                                fontColor="gray500"
+                            >
+                                {medias.project.name}
+                            </Text>
                         </Flex>
                     ))) : (
                     <Flex
