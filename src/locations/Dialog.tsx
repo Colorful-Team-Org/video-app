@@ -23,6 +23,7 @@ const Dialog = () => {
     }, [sdk]);
 
     const [mediaList, setMediaList] = useState<Medias[] | undefined>();
+    const [mediaId, setMediaId] = useState(null);
     const [selected, setSelected] = useState(false)
     const [query, setQuery] = useState('');
     const [queryResults, setQueryResults] = useState<Medias[] | undefined>();
@@ -70,6 +71,10 @@ const Dialog = () => {
         filterMediaList(query);
     }, [query]);
 
+    const handleMouseOver = (id: any) => {
+        setMediaId(id);
+    }
+
     if (!mediaList) {
         return (
             <Stack
@@ -86,124 +91,150 @@ const Dialog = () => {
     }
 
     return (
-        <Box style={{margin: '1.25rem'}}>
-            <FormControl>
-                <TextInput
-                    value={query}
-                    type="text"
-                    name="Search videos"
-                    placeholder="Search videos..."
-                    onChange={(e) => setQuery(e.target.value)}
-                />
-            </FormControl>
-            <Flex
-                fullWidth={true}
-                flexDirection="row"
-                flexWrap="wrap"
-                justifyContent="flex-start"
-                gap="1.875rem">
-                {queryResults && queryResults.length > 0 ? (
-                    queryResults.map((medias: any) => (
-                        <Flex key={medias.id}
-                              flexDirection="column"
-                              flexWrap="wrap"
-                              style={{position: 'relative'}}
-                        >
-                            <AssetCard
-                                type="image"
-                                title={`${medias.name}${
-                                    sdk.parameters.invocation === medias.name ? " (selected)" : ""
-                                }`}
-                                src={medias.thumbnail.url}
-                                style={{
-                                    width: '200px',
-                                    height: '121px',
-                                    overflow: 'hidden'
-                                }}
-                                isSelected={selected}
-                                onClick={() => {
-                                    setSelected(!selected);
-                                    sdk.close(medias); // close the dialog and return the selected value
-                                }}
-                            />
-                            <Box as="span"
-                                 style={{
-                                     display: 'flex',
-                                     flexDirection: 'row',
-                                     gap: 'spacingXs',
-                                     position: 'absolute',
-                                     right: '0.5rem',
-                                     top: '6rem',
-                                     backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                                     borderRadius: '3px',
-                                     padding: '0 0.125rem',
-                                 }}>
-                                <Text
-                                    fontSize="fontSizeS"
-                                    lineHeight="lineHeightS"
-                                    fontColor="colorWhite"
-                                >
-                                    {timeDuration(medias.duration)}
-                                </Text>
-                            </Box>
-                            <Box as="span"
-                                 style={{
-                                     display: 'flex',
-                                     flexDirection: 'row',
-                                     gap: 'spacingXs',
-                                     position: 'absolute',
-                                     right: '0.5rem',
-                                     top: '0.5rem',
-                                     backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                                     borderRadius: '3px',
-                                     padding: '0 0.125rem',
-                                 }}>
-                                <Text
-                                    fontSize="fontSizeS"
-                                    lineHeight="lineHeightS"
-                                    fontColor="colorWhite"
-                                >
-                                    {timeSince(medias.created)} ago
-                                </Text>
-                            </Box>
-                            <Text
-                                fontSize="fontSizeM"
-                                lineHeight="lineHeightS"
-                                fontColor="gray600"
-                                fontWeight="fontWeightDemiBold"
-                                style={{
-                                    marginTop: '0.25rem',
-                                    inlineSize: '200px',
-                                    whiteSpace: 'nowrap',
-                                    textOverflow: 'ellipsis',
-                                    overflow: 'hidden'
-                                }}>
-                                {medias.name}</Text>
-                            <Text
-                                fontSize="fontSizeS"
-                                lineHeight="lineHeightS"
-                                fontColor="gray500"
+        <>
+            <Box style={{
+                backgroundColor: '#f7f9fa',
+                borderBottom: `1px solid ${tokens.gray300}`,
+                paddingTop: '1.5rem',
+                position: 'sticky',
+                top: 0,
+                zIndex: 1,
+            }}>
+                <FormControl
+                    style={{
+                        marginLeft: '1.25rem',
+                        marginRight: '1.25rem',
+                    }}
+                >
+                    <TextInput
+                        value={query}
+                        type="text"
+                        name="Search videos"
+                        placeholder="Search videos..."
+                        onChange={(e) => setQuery(e.target.value)}
+                    />
+                </FormControl>
+            </Box>
+            <Box style={{margin: '1.25rem'}}>
+                <Flex
+                    fullWidth={true}
+                    flexDirection="row"
+                    flexWrap="wrap"
+                    justifyContent="flex-start"
+                    gap="1.5rem">
+                    {queryResults && queryResults.length > 0 ? (
+                        queryResults.map((medias: any) => (
+                            <Flex key={medias.id}
+                                  flexDirection="column"
+                                  flexWrap="wrap"
+                                  style={{position: 'relative'}}
+                                  onMouseEnter={() => handleMouseOver(medias.id)}
+                                  onMouseLeave={() => handleMouseOver(null)}
                             >
-                                {medias.project.name}
-                            </Text>
+                                <AssetCard
+                                    type="image"
+                                    title={`${medias.name}${
+                                        sdk.parameters.invocation === medias.name ? " (selected)" : ""
+                                    }`}
+                                    src={medias.thumbnail.url.replace('200x120', '274x183')}
+                                    style={{
+                                        width: '270px',
+                                        height: '181px',
+                                        overflow: 'hidden'
+                                    }}
+                                    isSelected={selected}
+                                    onClick={() => {
+                                        setSelected(!selected);
+                                        sdk.close(medias); // close the dialog and return the selected value
+                                    }}
+                                />
+                                <Box as="span"
+                                     style={{
+                                         display: 'flex',
+                                         flexDirection: 'row',
+                                         gap: 'spacingXs',
+                                         position: 'absolute',
+                                         right: '0.5rem',
+                                         bottom: '4.5rem',
+                                         backgroundColor: 'rgba(0, 0, 0, 0.35)',
+                                         borderRadius: '3px',
+                                         padding: '0 0.125rem',
+                                         opacity: mediaId === medias.id ? 1 : 0,
+                                         transition: 'all 0.2s ease-in-out',
+                                     }}>
+                                    <Text
+                                        fontSize="fontSizeS"
+                                        lineHeight="lineHeightS"
+                                        fontColor="colorWhite"
+                                    >
+                                        {timeDuration(medias.duration)}
+                                    </Text>
+                                </Box>
+                                <Box as="span"
+                                     style={{
+                                         display: 'flex',
+                                         flexDirection: 'row',
+                                         gap: 'spacingXs',
+                                         position: 'absolute',
+                                         right: '0.5rem',
+                                         top: '0.5rem',
+                                         backgroundColor: 'rgba(0, 0, 0, 0.35)',
+                                         borderRadius: '3px',
+                                         padding: '0 0.125rem',
+                                         opacity: mediaId === medias.id ? 1 : 0,
+                                         transition: 'all 0.2s ease-in-out',
+                                     }}>
+                                    <Text
+                                        fontSize="fontSizeS"
+                                        lineHeight="lineHeightS"
+                                        fontColor="colorWhite"
+                                    >
+                                        {timeSince(medias.created)} ago
+                                    </Text>
+                                </Box>
+                                <Text
+                                    fontSize="fontSizeM"
+                                    lineHeight="lineHeightS"
+                                    fontColor="gray600"
+                                    fontWeight="fontWeightDemiBold"
+                                    style={{
+                                        marginTop: '0.25rem',
+                                        inlineSize: '270px',
+                                        whiteSpace: 'nowrap',
+                                        textOverflow: 'ellipsis',
+                                        overflow: 'hidden'
+                                    }}>
+                                    {medias.name}</Text>
+                                <Text
+                                    fontSize="fontSizeS"
+                                    lineHeight="lineHeightS"
+                                    fontColor="gray500"
+                                    style={{
+                                        opacity: mediaId === medias.id ? 1 : 0,
+                                        transition: 'all 0.2s ease-in-out',
+                                    }}
+                                >
+                                    {medias.project.name}
+                                </Text>
+                            </Flex>
+                        )).reverse()) : (
+                        <Flex
+                            fullWidth={true}
+                            flexDirection="column"
+                            justifyContent="center"
+                            alignItems="center">
+                            <Subheading
+                                style={{color: tokens.gray600}}>
+                                No results found</Subheading>
+                            <Paragraph
+                                style={{color: tokens.gray600}}>
+                                Check your search for typos or try a more generic
+                                word.</Paragraph>
                         </Flex>
-                    ))) : (
-                    <Flex
-                        fullWidth={true}
-                        flexDirection="column"
-                        justifyContent="center"
-                        alignItems="center">
-                        <Subheading
-                            style={{color: tokens.gray600}}>
-                            No results found</Subheading>
-                        <Paragraph
-                            style={{color: tokens.gray600}}>
-                            Check your search for typos or try a more generic
-                            word.</Paragraph>
-                    </Flex>
-                )}
-            </Flex>
-        </Box>
+                    )}
+                </Flex>
+            </Box>
+        </>
     );
 };
 
