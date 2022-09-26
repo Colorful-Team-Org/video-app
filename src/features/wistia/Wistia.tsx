@@ -288,6 +288,7 @@ const Wistia = ({ viewVideosList }: any) => {
                         style={{
                             width: '100%',
                             minHeight: '395px',
+                            margin: '48px auto',
                             backgroundColor: '#f7f9fa',
                             textAlign: 'center',
                             border: '1px dashed rgb(174, 193, 204)',
