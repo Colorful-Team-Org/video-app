@@ -71,7 +71,8 @@ const Preview = ({media}: any) => {
                     as="div"
                     id="wistia_upload_preview"
                     style={{
-                        width: "690px",
+                        width: "100%",
+                        maxWidth: "700px",
                         height: "395px",
                         overflow: "hidden",
                     }}
@@ -80,8 +81,8 @@ const Preview = ({media}: any) => {
                         as="div"
                         className={`wistia_embed wistia_async_${media.hashed_id} controlsVisibleOnLoad=false`}
                         style={{
-                            width: "690px",
-                            height: "395px",
+                            width: "100%",
+                            height: "100%",
                         }}
                     >
                         &nbsp;
