@@ -59,7 +59,10 @@ const Field = () => {
                         onClose('No video data was removed.');
                     }}
                     onConfirm={() => {
-                        Notification.success('This action cannot be undone. Note, the file is still available in your Wistia project.', {title: 'Video data removed!'});
+                        Notification.success(
+                            'This action cannot be undone. Note, the file is still available in your Wistia project.',
+                            {title: 'Video data removed!', duration: 2500 }
+                        );
                         onClose(() => setMedia(undefined));
                     }}
                     confirmLabel="Remove the video data"
@@ -137,7 +140,6 @@ const Field = () => {
                         setIsLoading(false);
                         console.log('🔄 Reloading preview window...');
                         window.location.reload();
-                        sdk.notifier.success('Video preview has been reloaded with the updated thumbnail.');
                     }, 9000);
                 }
             }).catch(error => {

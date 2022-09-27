@@ -1,12 +1,8 @@
 import {Box, IconButton, ModalLauncher, ModalConfirm, Text, Tooltip} from '@contentful/f36-components';
 import {CloseTrimmedIcon} from '@contentful/f36-icons';
-import {Notification} from "@contentful/f36-notification";
-import {useSDK} from "@contentful/react-apps-toolkit";
 import React from "react";
-import {FieldExtensionSDK} from "@contentful/app-sdk";
 
 const CancelUpload = () => {
-    const sdk = useSDK<FieldExtensionSDK>();
 
     const handleCancel = () => {
         ModalLauncher.open(({isShown, onClose}) => {
@@ -18,12 +14,11 @@ const CancelUpload = () => {
                     allowHeightOverflow={true}
                     onCancel={() => {
                         onClose(() => {
-                            Notification.success('You can track you upload progress.', {title: 'Upload continues'});
+                            return false;
                         });
                     }}
                     onConfirm={() => {
                         window.wistiaUploader.cancel();
-                        sdk.notifier.success('You have cancelled your video upload. Uploader was reset to default.');
                         onClose(() => {
                             window.location.reload();
                         });

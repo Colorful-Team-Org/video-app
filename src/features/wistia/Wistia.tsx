@@ -159,7 +159,10 @@ const Wistia = ({ viewVideosList }: any) => {
             console.log(`❌ Error updating name, response: `, data);
 
             if (data.status === 404) {
-                Notification.error(`The video might have been removed from the Wistia platform or the project permissions might have been changed.`, {title: `Video not found`});
+                Notification.error(
+                    `The video might have been removed from the Wistia platform or the project permissions might have been changed.`,
+                    {title: `Video not found`, duration: 2500 }
+                );
             }
         }
     });
@@ -206,7 +209,7 @@ const Wistia = ({ viewVideosList }: any) => {
                         <Heading style={{margin: 0}}>{fileName}</Heading>
                         {fileName !== '' &&
                             <Tooltip
-                                content={uploadActive ? 'You cannot edit the name while uploading' : 'Edit video name'}>
+                                content={uploadActive ? 'To edit the title, wait until the upload is complete.' : 'Edit video name'}>
                                 <IconButton
                                     aria-label="Edit Video Name"
                                     icon={<EditIcon/>}
