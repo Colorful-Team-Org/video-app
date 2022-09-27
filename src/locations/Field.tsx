@@ -33,6 +33,7 @@ const Field = () => {
         const result = await sdk.dialogs.openCurrentApp({
             shouldCloseOnEscapePress: true,
             shouldCloseOnOverlayClick: true,
+            width: 900,
             minHeight: '30vh',
             title: "Select a video",
             // @ts-expect-error
@@ -73,7 +74,7 @@ const Field = () => {
         return (
             <Tooltip content={note} id={id}>
                 <Flex alignItems="center">
-                    <InfoCircleIcon size="small"/>
+                    <InfoCircleIcon size="small" variant="muted"/>
                 </Flex>
             </Tooltip>
         )
@@ -214,7 +215,7 @@ const Field = () => {
                                 Remove Video
                             </TextLink>
                             <InfoIconTooltip
-                                note="To remove the attached video or to attach a new video from Wistia, press on this link. Note that this action only removes the video from the entry, the video asset in Wistia remains untouched."
+                                note="To remove the attached video or to attach a new video from Wistia, press on this link. Note that this only removes the video from the entry, the video in Wistia remains untouched."
                                 id="remove-video"/>
                         </Stack>
                     </Stack>
