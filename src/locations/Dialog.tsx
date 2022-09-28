@@ -1,10 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
-    AssetCard,
-    Spinner,
-    Stack,
-    Heading,
-    Flex, Box, FormControl, TextInput, Paragraph, Text, Subheading,
+    Spinner, Stack, Heading, Flex, Box, FormControl, TextInput, Paragraph, Subheading,
 } from '@contentful/f36-components';
 import {Notification} from '@contentful/f36-notification';
 import {DialogExtensionSDK} from '@contentful/app-sdk';
@@ -12,7 +8,7 @@ import { /* useCMA, */ useSDK} from '@contentful/react-apps-toolkit';
 import {Medias} from "../utils/types";
 import tokens from "@contentful/f36-tokens";
 import wistiaFetch from "../utils/wistiaFetch";
-import {timeDuration, timeSince} from "../utils/time";
+import VideoCard from "../features/wistia/components/VideoCard";
 
 const Dialog = () => {
     const sdk = useSDK<DialogExtensionSDK>();
@@ -23,8 +19,6 @@ const Dialog = () => {
     }, [sdk]);
 
     const [mediaList, setMediaList] = useState<Medias[] | undefined>();
-    const [mediaId, setMediaId] = useState(null);
-    const [selected, setSelected] = useState(false)
     const [query, setQuery] = useState('');
     const [queryResults, setQueryResults] = useState<Medias[] | undefined>();
 
@@ -71,20 +65,15 @@ const Dialog = () => {
         filterMediaList(query);
     }, [query]);
 
-    const handleMouseOver = (id: any) => {
-        setMediaId(id);
-    }
-
     if (!mediaList) {
         return (
             <Stack
                 flexDirection="column"
                 style={{
-                    minHeight: '100%',
+                    height: '100vh',
                     justifyContent: 'center',
-                    margin: '2rem auto',
                 }}>
-                <Heading>Fetching media...</Heading>
+                <Heading style={{color: tokens.gray700}}>Fetching videos</Heading>
                 <Spinner size="large"/>
             </Stack>
         );
@@ -93,7 +82,7 @@ const Dialog = () => {
     return (
         <>
             <Box style={{
-                backgroundColor: '#f7f9fa',
+                backgroundColor: 'white',
                 borderBottom: `1px solid ${tokens.gray300}`,
                 paddingTop: '1.5rem',
                 position: 'sticky',
@@ -124,99 +113,7 @@ const Dialog = () => {
                     gap="1.5rem">
                     {queryResults && queryResults.length > 0 ? (
                         queryResults.map((medias: any) => (
-                            <Flex key={medias.id}
-                                  flexDirection="column"
-                                  flexWrap="wrap"
-                                  style={{position: 'relative'}}
-                                  onMouseEnter={() => handleMouseOver(medias.id)}
-                                  onMouseLeave={() => handleMouseOver(null)}
-                            >
-                                <AssetCard
-                                    type="image"
-                                    title={`${medias.name}${
-                                        sdk.parameters.invocation === medias.name ? " (selected)" : ""
-                                    }`}
-                                    src={medias.thumbnail.url.replace('200x120', '274x183')}
-                                    style={{
-                                        width: '270px',
-                                        height: '181px',
-                                        overflow: 'hidden'
-                                    }}
-                                    isSelected={selected}
-                                    onClick={() => {
-                                        setSelected(!selected);
-                                        sdk.close(medias); // close the dialog and return the selected value
-                                    }}
-                                />
-                                <Box as="span"
-                                     style={{
-                                         display: 'flex',
-                                         flexDirection: 'row',
-                                         gap: 'spacingXs',
-                                         position: 'absolute',
-                                         right: '0.5rem',
-                                         bottom: '4.5rem',
-                                         backgroundColor: 'rgba(0, 0, 0, 0.35)',
-                                         borderRadius: '3px',
-                                         padding: '0 0.125rem',
-                                         opacity: mediaId === medias.id ? 1 : 0,
-                                         transition: 'all 0.2s ease-in-out',
-                                     }}>
-                                    <Text
-                                        fontSize="fontSizeS"
-                                        lineHeight="lineHeightS"
-                                        fontColor="colorWhite"
-                                    >
-                                        {timeDuration(medias.duration)}
-                                    </Text>
-                                </Box>
-                                <Box as="span"
-                                     style={{
-                                         display: 'flex',
-                                         flexDirection: 'row',
-                                         gap: 'spacingXs',
-                                         position: 'absolute',
-                                         right: '0.5rem',
-                                         top: '0.5rem',
-                                         backgroundColor: 'rgba(0, 0, 0, 0.35)',
-                                         borderRadius: '3px',
-                                         padding: '0 0.125rem',
-                                         opacity: mediaId === medias.id ? 1 : 0,
-                                         transition: 'all 0.2s ease-in-out',
-                                     }}>
-                                    <Text
-                                        fontSize="fontSizeS"
-                                        lineHeight="lineHeightS"
-                                        fontColor="colorWhite"
-                                    >
-                                        {timeSince(medias.created)} ago
-                                    </Text>
-                                </Box>
-                                <Text
-                                    fontSize="fontSizeM"
-                                    lineHeight="lineHeightS"
-                                    fontColor="gray600"
-                                    fontWeight="fontWeightDemiBold"
-                                    style={{
-                                        marginTop: '0.25rem',
-                                        inlineSize: '270px',
-                                        whiteSpace: 'nowrap',
-                                        textOverflow: 'ellipsis',
-                                        overflow: 'hidden'
-                                    }}>
-                                    {medias.name}</Text>
-                                <Text
-                                    fontSize="fontSizeS"
-                                    lineHeight="lineHeightS"
-                                    fontColor="gray500"
-                                    style={{
-                                        opacity: mediaId === medias.id ? 1 : 0,
-                                        transition: 'all 0.2s ease-in-out',
-                                    }}
-                                >
-                                    {medias.project.name}
-                                </Text>
-                            </Flex>
+                            <VideoCard key={medias.id} medias={medias}/>
                         )).reverse()) : (
                         <Flex
                             fullWidth={true}
@@ -224,7 +121,7 @@ const Dialog = () => {
                             justifyContent="center"
                             alignItems="center">
                             <Subheading
-                                style={{color: tokens.gray600}}>
+                                style={{color: tokens.gray600, marginTop: '2.5rem'}}>
                                 No results found</Subheading>
                             <Paragraph
                                 style={{color: tokens.gray600}}>
