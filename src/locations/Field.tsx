@@ -33,7 +33,7 @@ const Field = () => {
         const result = await sdk.dialogs.openCurrentApp({
             shouldCloseOnEscapePress: true,
             shouldCloseOnOverlayClick: true,
-            width: 900,
+            width: 960,
             minHeight: '30vh',
             title: "Select a video",
             // @ts-expect-error
