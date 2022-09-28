@@ -9,6 +9,7 @@ import {Medias} from "../utils/types";
 import tokens from "@contentful/f36-tokens";
 import wistiaFetch from "../utils/wistiaFetch";
 import VideoCard from "../features/wistia/components/VideoCard";
+import FocusLock from "react-focus-lock";
 
 const Dialog = () => {
     const sdk = useSDK<DialogExtensionSDK>();
@@ -80,10 +81,9 @@ const Dialog = () => {
     }
 
     return (
-        <>
+        <FocusLock returnFocus={true}>
             <Box style={{
                 backgroundColor: 'white',
-                borderBottom: `1px solid ${tokens.gray300}`,
                 paddingTop: '1.5rem',
                 position: 'sticky',
                 top: 0,
@@ -91,8 +91,10 @@ const Dialog = () => {
             }}>
                 <FormControl
                     style={{
-                        marginLeft: '1.25rem',
-                        marginRight: '1.25rem',
+                        marginLeft: '3.175rem',
+                        marginRight: '3.175rem',
+                        marginBottom: '0',
+                        paddingBottom: '1.5rem',
                     }}
                 >
                     <TextInput
@@ -104,34 +106,36 @@ const Dialog = () => {
                     />
                 </FormControl>
             </Box>
-            <Box style={{margin: '1.25rem'}}>
-                <Flex
-                    fullWidth={true}
-                    flexDirection="row"
-                    flexWrap="wrap"
-                    justifyContent="flex-start"
-                    gap="1.5rem">
-                    {queryResults && queryResults.length > 0 ? (
-                        queryResults.map((medias: any) => (
-                            <VideoCard key={medias.id} medias={medias}/>
-                        )).reverse()) : (
-                        <Flex
-                            fullWidth={true}
-                            flexDirection="column"
-                            justifyContent="center"
-                            alignItems="center">
-                            <Subheading
-                                style={{color: tokens.gray600, marginTop: '2.5rem'}}>
-                                No results found</Subheading>
-                            <Paragraph
-                                style={{color: tokens.gray600}}>
-                                Check your search for typos or try a more generic
-                                word.</Paragraph>
-                        </Flex>
-                    )}
-                </Flex>
+            <Box style={{margin: '1.25rem 3.175rem'}}>
+                    <Flex
+                        fullWidth={true}
+                        flexDirection="row"
+                        flexWrap="wrap"
+                        justifyContent="flex-start"
+                        gap="1.5rem">
+                        {queryResults && queryResults.length > 0 ? (
+                            queryResults.map((medias: any) => (
+
+                                <VideoCard key={medias.id} medias={medias}/>
+
+                            )).reverse()) : (
+                            <Flex
+                                fullWidth={true}
+                                flexDirection="column"
+                                justifyContent="center"
+                                alignItems="center">
+                                <Subheading
+                                    style={{color: tokens.gray600, marginTop: '2.5rem'}}>
+                                    No results found</Subheading>
+                                <Paragraph
+                                    style={{color: tokens.gray600}}>
+                                    Check your search for typos or try a more generic
+                                    word.</Paragraph>
+                            </Flex>
+                        )}
+                    </Flex>
             </Box>
-        </>
+        </FocusLock>
     );
 };
 
