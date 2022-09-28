@@ -1,8 +1,11 @@
 import React, {useState} from "react";
-import {AssetCard, Box, Flex, Text} from "@contentful/f36-components";
+import {Asset, Flex, Text} from "@contentful/f36-components";
 import {timeDuration, timeSince} from "../../../utils/time";
 import {useSDK} from "@contentful/react-apps-toolkit";
 import {DialogExtensionSDK} from "@contentful/app-sdk";
+import {cx} from "emotion";
+import {styles} from "./VideoCard.styles"
+
 
 const VideoCard = ({key, medias}: any) => {
     const sdk = useSDK<DialogExtensionSDK>();
@@ -13,91 +16,34 @@ const VideoCard = ({key, medias}: any) => {
     }
 
     return (
-        <Flex key={key}
-              flexDirection="column"
-              flexWrap="wrap"
-              style={{position: 'relative'}}
-              onMouseEnter={() => handleMouseOver(medias.id)}
-              onMouseLeave={() => handleMouseOver(null)}
+        <Flex
+            key={key}
+            className={cx(styles.videoCard)}
+            onMouseEnter={() => handleMouseOver(medias.id)}
+            onMouseLeave={() => handleMouseOver(null)}
+            role="button"
+            aria-label={medias.name}
+            onClick={() => {
+                sdk.close(medias); // close the dialog and return the selected value
+            }}
         >
-            <AssetCard
+            <Asset
                 type="image"
-                src={medias.thumbnail.url.replace('200x120', '274x183')}
-                style={{
-                    width: '270px',
-                    height: '181px',
-                    overflow: 'hidden'
-                }}
-                onClick={() => {
-                    sdk.close(medias); // close the dialog and return the selected value
-                }}
+                src={medias.thumbnail.url.replace('200x120', '270x169')} // 16:10 aspect ratio
+                className={cx(styles.asset,  {[styles.active]: mediaId === medias.id})}
             />
-            <Box as="span"
-                 style={{
-                     display: 'flex',
-                     flexDirection: 'row',
-                     gap: 'spacingXs',
-                     position: 'absolute',
-                     right: '0.5rem',
-                     bottom: '4.5rem',
-                     backgroundColor: 'rgba(0, 0, 0, 0.35)',
-                     borderRadius: '3px',
-                     padding: '0 0.125rem',
-                     opacity: mediaId === medias.id ? 1 : 0,
-                     transition: 'all 0.2s ease-in-out',
-                 }}>
-                <Text
-                    fontSize="fontSizeS"
-                    lineHeight="lineHeightS"
-                    fontColor="colorWhite"
-                >
-                    {timeDuration(medias.duration)}
-                </Text>
-            </Box>
-            <Box as="span"
-                 style={{
-                     display: 'flex',
-                     flexDirection: 'row',
-                     gap: 'spacingXs',
-                     position: 'absolute',
-                     right: '0.5rem',
-                     top: '0.5rem',
-                     backgroundColor: 'rgba(0, 0, 0, 0.35)',
-                     borderRadius: '3px',
-                     padding: '0 0.125rem',
-                     opacity: mediaId === medias.id ? 1 : 0,
-                     transition: 'all 0.2s ease-in-out',
-                 }}>
-                <Text
-                    fontSize="fontSizeS"
-                    lineHeight="lineHeightS"
-                    fontColor="colorWhite"
-                >
+            <Flex className={cx(styles.timeWrapper)}>
+                <Text className={cx(styles.time, {[styles.show]: mediaId === medias.id})}>
                     {timeSince(medias.created)} ago
                 </Text>
-            </Box>
-            <Text
-                fontSize="fontSizeM"
-                lineHeight="lineHeightS"
-                fontColor="gray600"
-                fontWeight="fontWeightDemiBold"
-                style={{
-                    marginTop: '0.25rem',
-                    inlineSize: '270px',
-                    whiteSpace: 'nowrap',
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden'
-                }}>
-                {medias.name}</Text>
-            <Text
-                fontSize="fontSizeS"
-                lineHeight="lineHeightS"
-                fontColor="gray500"
-                style={{
-                    opacity: mediaId === medias.id ? 1 : 0,
-                    transition: 'all 0.2s ease-in-out',
-                }}
-            >
+                <Text className={cx(styles.time, {[styles.show]: mediaId === medias.id})}>
+                    {timeDuration(medias.duration)}
+                </Text>
+            </Flex>
+            <Text className={cx(styles.name)}>
+                {medias.name}
+            </Text>
+            <Text className={cx(styles.project, {[styles.show]: mediaId === medias.id})}>
                 {medias.project.name}
             </Text>
         </Flex>
