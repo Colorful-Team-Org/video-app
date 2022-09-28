@@ -206,7 +206,7 @@ const Wistia = ({ viewVideosList }: any) => {
             <Stack style={{marginBottom: '1rem'}}>
                 {!editNameShow &&
                     <>
-                        <Heading style={{margin: 0}}>{fileName}</Heading>
+                        <Heading style={{margin: 0, lineBreak: 'anywhere'}}>{fileName}</Heading>
                         {fileName !== '' &&
                             <Tooltip
                                 content={uploadActive ? 'To edit the title, wait until the upload is complete.' : 'Edit video name'}>
