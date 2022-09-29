@@ -47,32 +47,6 @@ const Field = () => {
         await setMedia(result);
     }
 
-    const handleRemove = () => {
-        ModalLauncher.open(({isShown, onClose}) => {
-            return (
-                <ModalConfirm
-                    title="Remove video data"
-                    intent="negative"
-                    isShown={isShown}
-                    allowHeightOverflow={true}
-                    onCancel={() => {
-                        onClose('No video data was removed.');
-                    }}
-                    onConfirm={() => {
-                        Notification.success(
-                            'This action cannot be undone. Note, the file is still available in your Wistia project.',
-                            {title: 'Video data removed!', duration: 2500 }
-                        );
-                        onClose(() => setMedia(undefined));
-                    }}
-                    confirmLabel="Remove the video data"
-                    cancelLabel="Keep the video">
-                    <Text>Do you really want to remove this video data?</Text>
-                </ModalConfirm>
-            );
-        }).then((result) => result());
-    }
-
     const InfoIconTooltip = ({note, id}: any) => {
         return (
             <Tooltip content={note} id={id}>
@@ -212,7 +186,7 @@ const Field = () => {
                                 isDisabled={isDisabled}
                                 icon={<DeleteIcon/>}
                                 alignIcon="start"
-                                onClick={() => handleRemove()}
+                                onClick={() => setMedia(undefined)}
                             >
                                 Remove Video
                             </TextLink>
