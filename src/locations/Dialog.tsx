@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
     Spinner, Stack, Heading, Flex, Box, FormControl, TextInput, Paragraph, Subheading,
 } from '@contentful/f36-components';
@@ -6,10 +6,10 @@ import {Notification} from '@contentful/f36-notification';
 import {DialogExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */ useSDK} from '@contentful/react-apps-toolkit';
 import {Medias} from "../utils/types";
-import tokens from "@contentful/f36-tokens";
 import wistiaFetch from "../utils/wistiaFetch";
 import VideoCard from "../features/wistia/components/VideoCard";
-import FocusLock from "react-focus-lock";
+import {cx} from "emotion";
+import {styles} from './Dialog.styles';
 
 const Dialog = () => {
     const sdk = useSDK<DialogExtensionSDK>();
@@ -19,6 +19,7 @@ const Dialog = () => {
         return () => sdk.window.stopAutoResizer();
     }, [sdk]);
 
+    const searchInputRef = useRef<HTMLInputElement>(null);
     const [mediaList, setMediaList] = useState<Medias[] | undefined>();
     const [query, setQuery] = useState('');
     const [queryResults, setQueryResults] = useState<Medias[] | undefined>();
@@ -47,7 +48,7 @@ const Dialog = () => {
                 }
                 setTimeout(() => sdk.close('error'), 6000);
             }
-        });
+        })
     }, []);
 
     const filterMediaList = (query: string) => {
@@ -66,77 +67,84 @@ const Dialog = () => {
         filterMediaList(query);
     }, [query]);
 
+    useEffect(() => {
+        searchInputRef.current?.focus();
+    }, [queryResults]);
+
+    const handleKeyboardEvent = (event: any, medias: any) => {
+        if (event.key === 'Escape') {
+            if (document.activeElement?.getAttribute('role') === 'button') {
+                searchInputRef.current?.focus();
+                return
+            }
+            if (document.activeElement === searchInputRef.current) {
+                searchInputRef.current?.blur();
+                return
+            }
+        }
+        if (event.key === 'Enter') {
+            sdk.close(medias); // close the dialog and return the selected value
+        }
+    }
+
+    //TODO: add a better Escape key handling
+    useEffect(() => {
+        document.addEventListener('keydown', (event: any) => {
+            if (document.activeElement === document.body) {
+                sdk.close(null)
+            }
+        });
+    }, []);
+
     if (!mediaList) {
         return (
-            <Stack
-                flexDirection="column"
-                style={{
-                    height: '100vh',
-                    justifyContent: 'center',
-                }}>
-                <Heading style={{color: tokens.gray700}}>Fetching videos</Heading>
+            <Stack className={cx(styles.loadingWrapper)}>
+                <Heading className={cx(styles.loadingHeading)}>Fetching videos</Heading>
                 <Spinner size="large"/>
             </Stack>
         );
     }
 
     return (
-        <FocusLock returnFocus={true}>
-            <Box style={{
-                backgroundColor: 'white',
-                paddingTop: '1.5rem',
-                position: 'sticky',
-                top: 0,
-                zIndex: 1,
-            }}>
-                <FormControl
-                    style={{
-                        marginLeft: '3.175rem',
-                        marginRight: '3.175rem',
-                        marginBottom: '0',
-                        paddingBottom: '1.5rem',
-                    }}
-                >
+        <>
+            <Box className={cx(styles.searchHeader)}>
+                <FormControl className={cx(styles.searchHeaderInner)}>
                     <TextInput
                         value={query}
+                        ref={searchInputRef}
+                        // ref={searchInput => searchInput && searchInput.focus()}
+                        tabIndex={0}
                         type="text"
                         name="Search videos"
                         placeholder="Search videos..."
                         onChange={(e) => setQuery(e.target.value)}
+                        onKeyDown={(e) => handleKeyboardEvent(e, queryResults)}
                     />
                 </FormControl>
             </Box>
-            <Box style={{margin: '1.25rem 3.175rem'}}>
-                    <Flex
-                        fullWidth={true}
-                        flexDirection="row"
-                        flexWrap="wrap"
-                        justifyContent="flex-start"
-                        gap="1.5rem">
-                        {queryResults && queryResults.length > 0 ? (
-                            queryResults.map((medias: any) => (
-
-                                <VideoCard key={medias.id} medias={medias}/>
-
-                            )).reverse()) : (
-                            <Flex
-                                fullWidth={true}
-                                flexDirection="column"
-                                justifyContent="center"
-                                alignItems="center">
-                                <Subheading
-                                    style={{color: tokens.gray600, marginTop: '2.5rem'}}>
-                                    No results found</Subheading>
-                                <Paragraph
-                                    style={{color: tokens.gray600}}>
-                                    Check your search for typos or try a more generic
-                                    word.</Paragraph>
-                            </Flex>
-                        )}
-                    </Flex>
+            <Box className={cx(styles.videoListWrapper)}>
+                <Flex className={cx(styles.videoList)}>
+                    {queryResults && queryResults.length > 0 ? (
+                        queryResults.map((medias: any) => (
+                            <VideoCard
+                                key={medias.id}
+                                medias={medias}
+                                handleKeyboardEvent={handleKeyboardEvent}
+                            />
+                        )).reverse()) : (
+                        <Flex className={cx(styles.noResultsWrapper)}>
+                            <Subheading className={cx(styles.noResultsSubheading)}>
+                                No results found</Subheading>
+                            <Paragraph className={cx(styles.noResultsParagraph)}>
+                                Check your search for typos or try a more generic
+                                word.</Paragraph>
+                        </Flex>
+                    )}
+                </Flex>
             </Box>
-        </FocusLock>
+        </>
     );
 };
+
 
 export default Dialog;

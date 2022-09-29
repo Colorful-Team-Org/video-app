@@ -7,26 +7,12 @@ import {cx} from "emotion";
 import {styles} from "./VideoCard.styles"
 
 
-const VideoCard = ({medias}: any) => {
+const VideoCard = ({medias, handleKeyboardEvent}: any) => {
     const sdk = useSDK<DialogExtensionSDK>();
     const [mediaId, setMediaId] = useState(null);
 
     const handleMouseOver = (id: any) => {
         setMediaId(id);
-    }
-
-    const handleKeyboardEvent = (event: any) => {
-        if (event.key === 'Escape') {
-            if (document.activeElement?.getAttribute('role') === 'button') {
-                document.querySelector('input')?.focus();
-            }
-            //TODO: update focus lock
-            //sdk.close();
-        }
-
-        if (event.key === 'Enter') {
-            sdk.close(medias);
-        }
     }
 
     return (
@@ -36,7 +22,7 @@ const VideoCard = ({medias}: any) => {
             onMouseLeave={() => handleMouseOver(null)}
             onFocus={() => handleMouseOver(medias.id)}
             onBlur={() => handleMouseOver(null)}
-            onKeyDown={(e: any) => handleKeyboardEvent(e)}
+            onKeyDown={(e: any) => handleKeyboardEvent(e, medias)}
             role="button"
             tabIndex={0}
             aria-label={medias.name}
