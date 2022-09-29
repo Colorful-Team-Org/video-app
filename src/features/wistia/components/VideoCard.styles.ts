@@ -8,10 +8,16 @@ export const styles = {
         width: '270px',
         flexDirection: 'column',
         flexWrap: 'wrap',
-        borderTopLeftRadius: tokens.borderRadiusMedium,
-        borderTopRightRadius: tokens.borderRadiusMedium,
+        borderRadius: tokens.borderRadiusMedium,
         '&:hover': css({
             cursor: 'pointer',
+        }),
+        '&:focus': css({
+            borderColor: '#0059C8',
+            boxShadow: '0px 0px 0px 3px #98CBFF',
+        }),
+        '&:focus-visible': css({
+            outline: 'none',
         }),
     }),
 

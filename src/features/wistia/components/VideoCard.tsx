@@ -7,7 +7,7 @@ import {cx} from "emotion";
 import {styles} from "./VideoCard.styles"
 
 
-const VideoCard = ({key, medias}: any) => {
+const VideoCard = ({medias}: any) => {
     const sdk = useSDK<DialogExtensionSDK>();
     const [mediaId, setMediaId] = useState(null);
 
@@ -15,13 +15,30 @@ const VideoCard = ({key, medias}: any) => {
         setMediaId(id);
     }
 
+    const handleKeyboardEvent = (event: any) => {
+        if (event.key === 'Escape') {
+            if (document.activeElement?.getAttribute('role') === 'button') {
+                document.querySelector('input')?.focus();
+            }
+            //TODO: update focus lock
+            //sdk.close();
+        }
+
+        if (event.key === 'Enter') {
+            sdk.close(medias);
+        }
+    }
+
     return (
         <Flex
-            key={key}
             className={cx(styles.videoCard)}
             onMouseEnter={() => handleMouseOver(medias.id)}
             onMouseLeave={() => handleMouseOver(null)}
+            onFocus={() => handleMouseOver(medias.id)}
+            onBlur={() => handleMouseOver(null)}
+            onKeyDown={(e: any) => handleKeyboardEvent(e)}
             role="button"
+            tabIndex={0}
             aria-label={medias.name}
             onClick={() => {
                 sdk.close(medias); // close the dialog and return the selected value
@@ -30,7 +47,7 @@ const VideoCard = ({key, medias}: any) => {
             <Asset
                 type="image"
                 src={medias.thumbnail.url.replace('200x120', '270x169')} // 16:10 aspect ratio
-                className={cx(styles.asset,  {[styles.active]: mediaId === medias.id})}
+                className={cx(styles.asset, {[styles.active]: mediaId === medias.id})}
             />
             <Flex className={cx(styles.timeWrapper)}>
                 <Text className={cx(styles.time, {[styles.show]: mediaId === medias.id})}>
