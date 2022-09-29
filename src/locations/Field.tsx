@@ -1,11 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
-    Stack,
-    Flex,
-    Tooltip,
-    ModalLauncher,
-    ModalConfirm,
-    Text, Spinner, TextLink
+    Stack, Flex, Tooltip, Text, Spinner, TextLink
 } from '@contentful/f36-components';
 import {DeleteIcon, AssetIcon, InfoCircleIcon} from '@contentful/f36-icons';
 import {FieldExtensionSDK} from '@contentful/app-sdk';
@@ -46,6 +41,28 @@ const Field = () => {
 
         await setMedia(result);
     }
+
+    const removeVideoData = () => {
+        sdk.dialogs.openConfirm({
+            title: 'Remove video data',
+            message: 'Do you really want to remove this video data?',
+            intent: 'negative',
+            confirmLabel: 'Remove the video data',
+            cancelLabel: 'Keep the video',
+            shouldCloseOnEscapePress: true,
+            shouldCloseOnOverlayClick: true,
+        }).then((res) => {
+            if (res === true) {
+                Notification.success(
+                    'This action cannot be undone. Note, the file is still available in your Wistia project.',
+                    {title: 'Video data removed!', duration: 2500}
+                );
+                setMedia(undefined)
+            }
+            return;
+
+        });
+    };
 
     const InfoIconTooltip = ({note, id}: any) => {
         return (
@@ -186,7 +203,7 @@ const Field = () => {
                                 isDisabled={isDisabled}
                                 icon={<DeleteIcon/>}
                                 alignIcon="start"
-                                onClick={() => setMedia(undefined)}
+                                onClick={removeVideoData}
                             >
                                 Remove Video
                             </TextLink>
