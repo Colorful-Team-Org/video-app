@@ -12,6 +12,7 @@ const Preview = ({media}: any) => {
 
     // const [iframeSrc, setIframeSrc] = useState('');
     const [preview, setPreview] = useState(true);
+    const [errorMessage, setErrorMessage] = useState('');
 
     const getMediaItem = wistiaFetch(
         `https://api.wistia.com/v1/medias/${media.hashed_id}.json`,
@@ -25,9 +26,21 @@ const Preview = ({media}: any) => {
         getMediaItem.then((data) => {
             if (!data.ok) {
                 setPreview(false);
+                setErrorMessage('The video might have been removed from the Wistia platform\n' +
+                    '                            or the project permissions might have been changed.');
                 if (data.status === 404) {
                     console.error('❌ Video not found, 404.');
                 }
+            }
+            if (data.ok) {
+                data.json().then((data) => {
+                    if (data.type === 'UnknownType') {
+                        setPreview(false);
+                        setErrorMessage('Looks like the video file might be corrupted.\n' +
+                            '                            Please check the video file in the Wistia project.');
+                        console.error('💀 Unknown video type or corrupted file.');
+                    }
+                });
             }
         }).catch((error) => {
             throw new Error(error);
@@ -63,8 +76,7 @@ const Preview = ({media}: any) => {
                         > Video not found</Subheading>
                         <Paragraph
                             style={{color: tokens.gray600}}
-                        >The video might have been removed from the Wistia platform
-                            or the project permissions might have been changed.</Paragraph>
+                        >{errorMessage}</Paragraph>
                     </Box>
                 </Flex>
             ) : (<Box
