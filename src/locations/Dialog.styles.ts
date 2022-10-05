@@ -21,14 +21,14 @@ export const styles = {
     }),
 
     searchHeaderInner: css({
-        marginLeft: '3.175rem',
-        marginRight: '3.175rem',
+        marginLeft: '4.435rem',
+        marginRight: '4.435rem',
         marginBottom: '0',
         paddingBottom: '1.5rem',
     }),
 
     videoListWrapper: css({
-        margin: '1.25rem 3.175rem'
+        margin: '1.25rem 4.435rem'
     }),
 
     videoList: css({

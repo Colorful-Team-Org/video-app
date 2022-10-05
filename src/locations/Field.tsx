@@ -28,7 +28,7 @@ const Field = () => {
         const result = await sdk.dialogs.openCurrentApp({
             shouldCloseOnEscapePress: true,
             shouldCloseOnOverlayClick: true,
-            width: 960,
+            width: 1000,
             minHeight: '30vh',
             title: "Select a video",
             // @ts-expect-error
@@ -54,8 +54,8 @@ const Field = () => {
         }).then((res) => {
             if (res === true) {
                 Notification.success(
-                    'This action cannot be undone. Note, the file is still available in your Wistia project.',
-                    {title: 'Video data removed!', duration: 2500}
+                    'Note that the video asset is still available in your Wistia project.',
+                    {title: 'Video removed', duration: 2500}
                 );
                 setMedia(undefined)
             }
@@ -112,7 +112,7 @@ const Field = () => {
                 headers,
             }).then(response => {
                 if (response.ok) {
-                    Notification.success('Thumbnail is being updated. Preview window will reload once ready.', {title: 'Success!'});
+                    Notification.success('We\'re updating the thumbnail. The player will reload once the thumbnail is ready.', {title: 'Processing...'});
                 }
             }).catch(error => {
                 console.error('Set thumbnail error: ', error);
@@ -193,7 +193,7 @@ const Field = () => {
                                 ) : 'Set Thumbnail'}
                             </TextLink>
                             <InfoIconTooltip
-                                note="The thumbnail is what viewers see before they press play. If you want to replace it with an alternative shot, pause the video on the desired frame and hit this link."
+                                note="To replace the default thumbnail, pause the video on the desired frame and click this link."
                                 id="set-thumbnail"/>
                         </Stack>
                         <Stack spacing="spacingXs" marginTop="spacingXs" marginBottom="spacingXs">
@@ -208,7 +208,7 @@ const Field = () => {
                                 Remove Video
                             </TextLink>
                             <InfoIconTooltip
-                                note="To remove the attached video or to attach a new video from Wistia, press on this link. Note that this only removes the video from the entry, the video in Wistia remains untouched."
+                                note="Remove the video from the entry to upload or attach a new video."
                                 id="remove-video"/>
                         </Stack>
                     </Stack>
