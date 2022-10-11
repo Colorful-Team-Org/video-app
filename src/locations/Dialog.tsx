@@ -36,7 +36,7 @@ const Dialog = () => {
         getMediaList.then((data) => {
             data.json().then((data) => {
                 setMediaList(data);
-                setQueryResults(data);
+                setQueryResults(data); // Initial state
             });
 
             if (!data.ok) {
@@ -46,18 +46,18 @@ const Dialog = () => {
                 if (data.status === 404) {
                     Notification.error('Couldn\'t load videos list. Please check your Project ID.', {title: 'Project not found, 404.'});
                 }
-                setTimeout(() => sdk.close('error'), 6000);
+                setTimeout(() => sdk.close('Fetch video list failed.'), 6000);
             }
         })
     }, []);
 
     const filterMediaList = (query: string) => {
+        const filteredList = mediaList?.filter((media) => {
+            return media.name.toLowerCase().includes(query.toLowerCase());
+        });
+
         if (query.length > 0) {
-            // @ts-ignore
-            const result: any = mediaList.filter((media: Medias) => {
-                return media.name.toLowerCase().includes(query.toLowerCase());
-            });
-            setQueryResults(result);
+            setQueryResults(filteredList);
         } else if (query.length === 0) {
             setQueryResults(mediaList);
         }
@@ -90,7 +90,7 @@ const Dialog = () => {
     //TODO: add a better Escape key handling
     useEffect(() => {
         document.addEventListener('keydown', (event: any) => {
-            if (document.activeElement === document.body) {
+            if (event.key === 'Escape' && document.activeElement === document.body) {
                 sdk.close(null)
             }
         });
@@ -112,7 +112,6 @@ const Dialog = () => {
                     <TextInput
                         value={query}
                         ref={searchInputRef}
-                        // ref={searchInput => searchInput && searchInput.focus()}
                         tabIndex={0}
                         type="text"
                         name="Search videos"
@@ -129,6 +128,8 @@ const Dialog = () => {
                             <VideoCard
                                 key={medias.id}
                                 medias={medias}
+                                width={270}  // Aspect ratio
+                                height={169} // 16:10
                                 handleKeyboardEvent={handleKeyboardEvent}
                             />
                         )).reverse()) : (

@@ -21,13 +21,34 @@ export const styles = {
         }),
     }),
 
-    asset: css({
+    videoCard__skeletonImage: css({
+        minHeight: '169px',
+        borderRadius: tokens.borderRadiusMedium,
+    }),
+
+    videoCard__skeletonText: css({
+        height: '36px',
+        marginTop: 0
+    }),
+
+    thumbnail: css({
+        width: '100%',
+        minHeight: '169px',
+        backgroundColor: tokens.gray100,
         borderRadius: tokens.borderRadiusMedium,
         overflow: 'hidden',
         '> *': css({
             transform: 'scale(1.1)',
             transition: 'all 0.2s ease-in-out',
         }),
+    }),
+
+    thumbnailImage: css({
+        display: 'none',
+    }),
+
+    thumbnailImage__loaded: css({
+        display: 'block',
     }),
 
     timeWrapper: css({
