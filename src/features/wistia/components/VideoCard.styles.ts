@@ -13,8 +13,8 @@ export const styles = {
             cursor: 'pointer',
         }),
         '&:focus': css({
-            borderColor: '#0059C8',
-            boxShadow: '0px 0px 0px 3px #98CBFF',
+            borderColor: tokens.blue600,
+            boxShadow: `0px 0px 0px 3px ${tokens.blue300}`,
         }),
         '&:focus-visible': css({
             outline: 'none',
@@ -98,7 +98,7 @@ export const styles = {
     }),
 
     active: css({
-        boxShadow: '0 0 0 1px #036fe3',
+        boxShadow: `0 0 0 1px ${tokens.blue500}`,
         '> *': css({
             transform: 'scale(1.2)',
         }),
