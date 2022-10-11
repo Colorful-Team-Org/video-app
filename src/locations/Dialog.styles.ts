@@ -28,7 +28,8 @@ export const styles = {
     }),
 
     videoListWrapper: css({
-        margin: '1.25rem 4.435rem'
+        margin: '1.25rem 4.435rem',
+        paddingBottom: '170px',
     }),
 
     videoList: css({
