@@ -22,7 +22,7 @@ const ConfigScreen = () => {
     setup({
         cta: "Wistia",
         logo,
-        name: "Wistia Uploader & Media picker",
+        name: "Wistia Video",
         color: "#1e64f0",
         description:
             `The application connects with your Wistia account and allows to upload media or link already uploaded videos to your content in Contentful.
@@ -31,7 +31,7 @@ const ConfigScreen = () => {
             {
                 "id": "accessToken",
                 "type": "Symbol",
-                "name": "Wistia Upload Access Token",
+                "name": "Wistia Access Token",
                 "description": "Here comes the token from the Wistia dashboard -> Settings -> API Access. If you do not have access to Settings, you can request the Upload token from your administrator.",
                 "required": true,
             },
