@@ -9,10 +9,10 @@ const CancelUpload = () => {
 
     const handleCancel= () => {
         sdk.dialogs.openConfirm({
-            title: 'Cancel video upload',
-            message: 'Do you really want to cancel uploading this video?',
+            title: 'Cancel the upload',
+            message: 'Do you want to cancel the upload?',
             intent: 'negative',
-            confirmLabel: 'Cancel upload anyway',
+            confirmLabel: 'Cancel the upload',
             cancelLabel: 'Continue uploading',
             shouldCloseOnEscapePress: true,
             shouldCloseOnOverlayClick: true,
@@ -31,7 +31,7 @@ const CancelUpload = () => {
     //     ModalLauncher.open(({isShown, onClose}) => {
     //         return (
     //             <ModalConfirm
-    //                 title="Cancel video upload"
+    //                 title="Cancel the upload"
     //                 intent="negative"
     //                 isShown={isShown}
     //                 allowHeightOverflow={true}
@@ -46,9 +46,9 @@ const CancelUpload = () => {
     //                         window.location.reload();
     //                     });
     //                 }}
-    //                 confirmLabel="Cancel upload anyway"
+    //                 confirmLabel="Cancel the upload"
     //                 cancelLabel="Continue uploading">
-    //                 <Text>Do you really want to cancel uploading this video?</Text>
+    //                 <Text>Do you want to cancel the upload?</Text>
     //             </ModalConfirm>
     //         );
     //     }).then((result) => result());

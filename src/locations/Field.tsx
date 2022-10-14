@@ -43,11 +43,11 @@ const Field = () => {
 
     const removeVideoData = () => {
         sdk.dialogs.openConfirm({
-            title: 'Remove video data',
-            message: 'Do you really want to remove this video data?',
+            title: 'Remove the video',
+            message: 'Do you want to remove the video from the entry?',
             intent: 'negative',
-            confirmLabel: 'Remove the video data',
-            cancelLabel: 'Keep the video',
+            confirmLabel: 'Remove the video',
+            cancelLabel: 'Cancel',
             shouldCloseOnEscapePress: true,
             shouldCloseOnOverlayClick: true,
         }).then((res) => {
