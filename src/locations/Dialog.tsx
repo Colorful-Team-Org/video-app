@@ -2,64 +2,60 @@ import React, {useEffect, useRef, useState} from 'react';
 import {
     Spinner, Stack, Heading, Flex, Box, FormControl, TextInput, Paragraph, Subheading,
 } from '@contentful/f36-components';
-import {Notification} from '@contentful/f36-notification';
 import {DialogExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */ useSDK} from '@contentful/react-apps-toolkit';
 import {Medias} from "../utils/types";
-import wistiaFetch from "../utils/wistiaFetch";
 import VideoCard from "../features/wistia/components/VideoCard";
 import {cx} from "emotion";
 import {styles} from './Dialog.styles';
+import {useAsync} from "react-async-hook";
+
 
 const Dialog = () => {
     const sdk = useSDK<DialogExtensionSDK>();
 
-    useEffect(() => {
-        sdk.window.startAutoResizer();
-        return () => sdk.window.stopAutoResizer();
-    }, [sdk]);
-
     const searchInputRef = useRef<HTMLInputElement>(null);
-    const [mediaList, setMediaList] = useState<Medias[] | undefined>();
     const [query, setQuery] = useState('');
     const [queryResults, setQueryResults] = useState<Medias[] | undefined>();
 
-    const getMediaList = wistiaFetch(
-        `https://api.wistia.com/v1/medias.json?type=Video&project_id=${sdk.parameters.installation.projectId}`,
-        `GET`,
-        `application/json`,
-        `Bearer ${sdk.parameters.installation.accessToken}`,
-        null
-    );
+    const getMediaList = fetch(`https://api.wistia.com/v1/medias.json?type=Video&project_id=${sdk.parameters.installation.projectId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sdk.parameters.installation.accessToken}`
+        },
+        cache: 'no-cache',
+        credentials: 'same-origin',
+    });
 
-    useEffect(() => {
-        getMediaList.then((data) => {
-            data.json().then((data) => {
-                setMediaList(data);
-                setQueryResults(data); // Initial state
+    const asyncGetMediaList = useAsync(
+        async () => {
+            const response = await getMediaList.then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    if (response.status === 404) {
+                        throw new Error('We could not load the videos list. Please check your Project ID.');
+                    }
+                    if (response.status === 401) {
+                        throw new Error('We could not load the videos list. Please check your access token.');
+                    }
+                    throw new Error('We could not load the videos list. Bad response from Wistia API.');
+                }
             });
+            return response;
+        }, []);
 
-            if (!data.ok) {
-                if (data.status === 401) {
-                    Notification.error('Couldn\'t load videos list. Please check your access token.', {title: 'Unauthorized, 401.'});
-                }
-                if (data.status === 404) {
-                    Notification.error('Couldn\'t load videos list. Please check your Project ID.', {title: 'Project not found, 404.'});
-                }
-                setTimeout(() => sdk.close('Fetch video list failed.'), 6000);
-            }
-        })
-    }, []);
 
     const filterMediaList = (query: string) => {
-        const filteredList = mediaList?.filter((media) => {
+        const filteredList = asyncGetMediaList.result?.filter((media: Medias) => {
             return media.name.toLowerCase().includes(query.toLowerCase());
         });
 
         if (query.length > 0) {
             setQueryResults(filteredList);
         } else if (query.length === 0) {
-            setQueryResults(mediaList);
+            setQueryResults(asyncGetMediaList.result);
         }
     }
 
@@ -69,7 +65,7 @@ const Dialog = () => {
 
     useEffect(() => {
         searchInputRef.current?.focus();
-    }, [queryResults]);
+    }, [asyncGetMediaList.result]);
 
     const handleKeyboardEvent = (event: any, medias: any) => {
         if (event.key === 'Escape') {
@@ -96,56 +92,80 @@ const Dialog = () => {
         });
     }, []);
 
-    if (!mediaList) {
-        return (
-            <Stack className={cx(styles.loadingWrapper)}>
-                <Heading className={cx(styles.loadingHeading)}>Fetching videos</Heading>
-                <Spinner size="large"/>
-            </Stack>
-        );
-    }
+    // Dialog close on error, maybe not the best way to surprise the user
+    // asyncGetMediaList.error && setTimeout(() => sdk.close(), 6000);
+
 
     return (
         <>
-            <Box className={cx(styles.searchHeader)}>
-                <FormControl className={cx(styles.searchHeaderInner)}>
-                    <TextInput
-                        value={query}
-                        ref={searchInputRef}
-                        tabIndex={0}
-                        type="text"
-                        name="Search videos"
-                        placeholder="Search videos..."
-                        onChange={(e) => setQuery(e.target.value)}
-                        onKeyDown={(e) => handleKeyboardEvent(e, queryResults)}
-                    />
-                </FormControl>
-            </Box>
-            <Box className={cx(styles.videoListWrapper)}>
-                <Flex className={cx(styles.videoList)}>
-                    {queryResults && queryResults.length > 0 ? (
-                        queryResults.map((medias: any) => (
-                            <VideoCard
-                                key={medias.id}
-                                medias={medias}
-                                width={270}  // Aspect ratio
-                                height={169} // 16:10
-                                handleKeyboardEvent={handleKeyboardEvent}
+            {asyncGetMediaList.loading &&
+                <Stack className={cx(styles.loadingWrapper)}>
+                    <Heading className={cx(styles.loadingHeading)}>Fetching videos</Heading>
+                    <Spinner size="large"/>
+                </Stack>
+            }
+            {asyncGetMediaList.error &&
+                <Stack className={cx(styles.loadingWrapper)}>
+                    <Heading className={cx(styles.loadingHeading)}>Houston, We’ve Had a Problem</Heading>
+                    <Paragraph>{asyncGetMediaList.error.message}</Paragraph>
+                </Stack>
+            }
+            {asyncGetMediaList.result &&
+                <>
+                    <Box className={cx(styles.searchHeader)}>
+                        <FormControl className={cx(styles.searchHeaderInner)}>
+                            <TextInput
+                                value={query}
+                                ref={searchInputRef}
+                                tabIndex={0}
+                                type="text"
+                                name="Search videos"
+                                placeholder="Search videos..."
+                                onChange={(e) => setQuery(e.target.value)}
+                                onKeyDown={(e) => handleKeyboardEvent(e, queryResults)}
                             />
-                        )).reverse()) : (
-                        <Flex className={cx(styles.noResultsWrapper)}>
-                            <Subheading className={cx(styles.noResultsSubheading)}>
-                                No results found</Subheading>
-                            <Paragraph className={cx(styles.noResultsParagraph)}>
-                                Check your search for typos or try a more generic
-                                word.</Paragraph>
+                        </FormControl>
+                    </Box>
+                    <Box className={cx(styles.videoListWrapper)}>
+                        <Flex className={cx(styles.videoList)}>
+                            {asyncGetMediaList.result.length > 0 && !queryResults ? (
+                                asyncGetMediaList.result.map((medias: any) => (
+                                    <VideoCard
+                                        key={medias.id}
+                                        medias={medias}
+                                        width={270}  // Aspect ratio
+                                        height={169} // 16:10
+                                        handleKeyboardEvent={handleKeyboardEvent}
+                                    />
+                                )).reverse()
+                            ) : (
+                                <>
+                                    {queryResults && queryResults?.length > 0 ? (
+                                        queryResults.map((medias: any) => (
+                                            <VideoCard
+                                                key={medias.id}
+                                                medias={medias}
+                                                width={270}  // Aspect ratio
+                                                height={169} // 16:10
+                                                handleKeyboardEvent={handleKeyboardEvent}
+                                            />
+                                        )).reverse()) : (
+                                        <Flex className={cx(styles.noResultsWrapper)}>
+                                            <Subheading className={cx(styles.noResultsSubheading)}>
+                                                No results found</Subheading>
+                                            <Paragraph className={cx(styles.noResultsParagraph)}>
+                                                Check your search for typos or try a more generic
+                                                word.</Paragraph>
+                                        </Flex>
+                                    )}
+                                </>
+                            )}
                         </Flex>
-                    )}
-                </Flex>
-            </Box>
+                    </Box>
+                </>
+            }
         </>
     );
 };
-
 
 export default Dialog;

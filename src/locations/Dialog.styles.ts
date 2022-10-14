@@ -4,7 +4,7 @@ import tokens from "@contentful/f36-tokens";
 export const styles = {
     loadingWrapper: css({
         flexDirection: 'column',
-        height: '100vh',
+        height: 'calc(100ch - 170px)',
         justifyContent: 'center',
     }),
 
@@ -29,7 +29,6 @@ export const styles = {
 
     videoListWrapper: css({
         margin: '1.25rem 4.435rem',
-        paddingBottom: '170px',
     }),
 
     videoList: css({
