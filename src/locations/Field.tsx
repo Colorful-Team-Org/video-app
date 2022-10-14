@@ -1,14 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {
-    Stack, Flex, Tooltip, Text, Spinner, TextLink
-} from '@contentful/f36-components';
-import {DeleteIcon, AssetIcon, InfoCircleIcon} from '@contentful/f36-icons';
 import {FieldExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */useFieldValue, useSDK} from '@contentful/react-apps-toolkit';
 import Wistia from '../features/wistia/Wistia';
 import Preview from "../features/wistia/components/Preview";
-import {Notification} from '@contentful/f36-notification';
 import {Medias} from "../utils/types";
+import {Button, Flex, Spinner, Stack, Text, Tooltip} from "@contentful/f36-components";
+import {ModalLauncher, ModalConfirm} from "@contentful/f36-modal";
+import {Notification} from '@contentful/f36-notification';
+import {DeleteIcon, AssetIcon, InfoCircleIcon} from '@contentful/f36-icons';
 
 
 const Field = () => {
@@ -29,7 +28,7 @@ const Field = () => {
             shouldCloseOnEscapePress: true,
             shouldCloseOnOverlayClick: true,
             width: 1000,
-            minHeight: '30vh',
+            minHeight: 790,
             title: "Select a video",
             // @ts-expect-error
             parameters: media,
@@ -141,7 +140,6 @@ const Field = () => {
     }
 
     useEffect(() => {
-        //@ts-ignore
         if (media !== undefined) {
             // Get time change for thumbnail extraction
             window._wq = window._wq || [];
@@ -150,15 +148,14 @@ const Field = () => {
                 id: media.hashed_id, onReady: function (video: any) {
                     video.ready(() => {
                         console.log('🎬 Video is ready');
+                        // Set video embed height to prevent the preview from breaking the layout after processing is done
                         video.height(395, {constrain: false});
-
+                        // Set the time change when the video is being paused
                         video.bind("pause", function () {
-                            console.warn(`⏸ ${video.time()} seconds`);
                             setTimeChange(video.time());
                         });
-
+                        // Set the time change when the video is playing or progress bar is dragged
                         video.bind("timechange", function () {
-                            console.log(`⏱ ${video.time()} seconds`);
                             setTimeChange(video.time());
                         });
                     });
@@ -179,36 +176,34 @@ const Field = () => {
                         spacing="spacingM"
                         justifyContent="space-evenly">
                         <Stack spacing="spacingXs" marginTop="spacingXs" marginBottom="spacingXs">
-                            <TextLink
-                                as="button"
+                            <Button
                                 variant="secondary"
                                 isDisabled={isDisabled}
-                                icon={<AssetIcon/>}
-                                alignIcon="start"
+                                startIcon={<AssetIcon/>}
                                 onClick={() => setNewThumbnail()}
                             >
                                 {isLoading ? (
-                                    <><Text marginRight="spacingXs">Loading</Text><Spinner size="medium"
-                                                                                           variant="default"/></>
+                                    <>
+                                        <Text marginRight="spacingXs">Loading</Text>
+                                        <Spinner size="medium" variant="default"/>
+                                    </>
                                 ) : 'Set Thumbnail'}
-                            </TextLink>
+                            </Button>
                             <InfoIconTooltip
-                                note="To replace the default thumbnail, pause the video on the desired frame and click this link."
+                                note="To replace the default thumbnail, pause the video on the desired frame and click on this button."
                                 id="set-thumbnail"/>
                         </Stack>
                         <Stack spacing="spacingXs" marginTop="spacingXs" marginBottom="spacingXs">
-                            <TextLink
-                                as="button"
+                            <Button
                                 variant="secondary"
                                 isDisabled={isDisabled}
-                                icon={<DeleteIcon/>}
-                                alignIcon="start"
+                                startIcon={<DeleteIcon/>}
                                 onClick={removeVideoData}
                             >
                                 Remove Video
-                            </TextLink>
+                            </Button>
                             <InfoIconTooltip
-                                note="Remove the video from the entry to upload or attach a new video."
+                                note="Click this button to remove the video from the entry. You can upload a new video or select an existing video after."
                                 id="remove-video"/>
                         </Stack>
                     </Stack>
