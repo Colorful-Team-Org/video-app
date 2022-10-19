@@ -16,7 +16,7 @@ App build can be found inside Colorful Collective organisation.
 
 ## Features
 
-- [x] Upload video files to Wistia project
+- [x] Upload video files to Wistia project from the Contentful web app
 - [x] Browse and select videos available in Wistia project
 - [x] Video preview for uploaded or selected file
 - [x] Update the video name
