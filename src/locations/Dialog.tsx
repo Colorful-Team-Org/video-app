@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import {KeyboardEventHandler, useCallback, useEffect, useRef, useState} from 'react';
 import {
     Spinner, Stack, Heading, Flex, Box, FormControl, TextInput, Paragraph, Subheading,
 } from '@contentful/f36-components';
@@ -15,85 +15,79 @@ const Dialog = () => {
     const sdk = useSDK<DialogExtensionSDK>();
 
     const searchInputRef = useRef<HTMLInputElement>(null);
-    const [query, setQuery] = useState('');
     const [queryResults, setQueryResults] = useState<Medias[] | undefined>();
 
-    const getMediaList = fetch(`https://api.wistia.com/v1/medias.json?type=Video&project_id=${sdk.parameters.installation.projectId}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sdk.parameters.installation.accessToken}`
-        },
-        cache: 'no-cache',
-        credentials: 'same-origin',
-    });
-
     const asyncGetMediaList = useAsync(
-        async () => {
-            const response = await getMediaList.then((response) => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    if (response.status === 404) {
-                        throw new Error('We could not load the videos list. Please check your Project ID.');
-                    }
-                    if (response.status === 401) {
-                        throw new Error('We could not load the videos list. Please check your access token.');
-                    }
-                    throw new Error('We could not load the videos list. Bad response from Wistia API.');
-                }
+        async (projectId?: string) => {
+            if (!projectId) {
+                throw new Error('We could not load the videos list. Please check your Project ID.');
+            }
+            const response = await fetch(`https://api.wistia.com/v1/medias.json?type=Video&project_id=${projectId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sdk.parameters.installation.accessToken}`
+                },
+                cache: 'no-cache',
+                credentials: 'same-origin',
             });
-            return response;
-        }, []);
 
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('We could not load the videos list. Please check your Project ID.');
+                }
+                if (response.status === 401) {
+                    throw new Error('We could not load the videos list. Please check your access token.');
+                }
+                throw new Error('We could not load the videos list. Bad response from Wistia API.');
+            }
+            return await response.json() as Medias[]
+        }, [sdk.parameters.installation.projectId]);
 
-    const filterMediaList = (query: string) => {
+    const handleQueryInput = useCallback((query: string) => {
+        if (!query.length) {
+            setQueryResults(asyncGetMediaList.result);
+            return;
+        }
         const filteredList = asyncGetMediaList.result?.filter((media: Medias) => {
             return media.name.toLowerCase().includes(query.toLowerCase());
         });
-
-        if (query.length > 0) {
-            setQueryResults(filteredList);
-        } else if (query.length === 0) {
-            setQueryResults(asyncGetMediaList.result);
-        }
-    }
-
-    useEffect(() => {
-        filterMediaList(query);
-    }, [query]);
-
-    useEffect(() => {
-        searchInputRef.current?.focus();
+        setQueryResults(filteredList);
     }, [asyncGetMediaList.result]);
 
-    const handleKeyboardEvent = (event: any, medias: any) => {
+    const handleInputKeyboardEvent: KeyboardEventHandler = event => {
         if (event.key === 'Escape') {
             if (document.activeElement?.getAttribute('role') === 'button') {
                 searchInputRef.current?.focus();
-                return
+                return;
             }
             if (document.activeElement === searchInputRef.current) {
                 searchInputRef.current?.blur();
-                return
+                return;
             }
         }
         if (event.key === 'Enter') {
-            sdk.close(medias); // close the dialog and return the selected value
+            sdk.close(queryResults); // close the dialog and return the selected value
         }
     }
 
     //TODO: add a better Escape key handling
     useEffect(() => {
-        document.addEventListener('keydown', (event: any) => {
+        const handler = (event: KeyboardEvent) => {
             if (event.key === 'Escape' && document.activeElement === document.body) {
-                sdk.close(null)
+                sdk.close(null);
             }
-        });
-    }, []);
+        };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [sdk]);
 
     // Dialog close on error, maybe not the best way to surprise the user
     // asyncGetMediaList.error && setTimeout(() => sdk.close(), 6000);
+
+    useEffect(() => {
+        searchInputRef.current?.focus();
+    }, [asyncGetMediaList.result]);
 
 
     return (
@@ -115,39 +109,39 @@ const Dialog = () => {
                     <Box className={cx(styles.searchHeader)}>
                         <FormControl className={cx(styles.searchHeaderInner)}>
                             <TextInput
-                                value={query}
+                                // value={query}
                                 ref={searchInputRef}
                                 tabIndex={0}
                                 type="text"
                                 name="Search videos"
                                 placeholder="Search videos..."
-                                onChange={(e) => setQuery(e.target.value)}
-                                onKeyDown={(e) => handleKeyboardEvent(e, queryResults)}
+                                onChange={(e) => handleQueryInput(e.target.value)}
+                                onKeyDown={(e) => handleInputKeyboardEvent(e)}
                             />
                         </FormControl>
                     </Box>
                     <Box className={cx(styles.videoListWrapper)}>
                         <Flex className={cx(styles.videoList)}>
                             {asyncGetMediaList.result.length > 0 && !queryResults ? (
-                                asyncGetMediaList.result.map((medias: any) => (
+                                asyncGetMediaList.result.map(medias => (
                                     <VideoCard
                                         key={medias.id}
                                         medias={medias}
                                         width={270}  // Aspect ratio
                                         height={169} // 16:10
-                                        handleKeyboardEvent={handleKeyboardEvent}
+                                        handleKeyboardEvent={handleInputKeyboardEvent}
                                     />
                                 )).reverse()
                             ) : (
                                 <>
-                                    {queryResults && queryResults?.length > 0 ? (
-                                        queryResults.map((medias: any) => (
+                                    {queryResults?.length ? (
+                                        queryResults.map(medias => (
                                             <VideoCard
                                                 key={medias.id}
                                                 medias={medias}
                                                 width={270}  // Aspect ratio
                                                 height={169} // 16:10
-                                                handleKeyboardEvent={handleKeyboardEvent}
+                                                handleKeyboardEvent={handleInputKeyboardEvent}
                                             />
                                         )).reverse()) : (
                                         <Flex className={cx(styles.noResultsWrapper)}>
