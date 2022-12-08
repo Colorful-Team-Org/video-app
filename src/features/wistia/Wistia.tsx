@@ -21,7 +21,7 @@ import {EditIcon, ExternalLinkIcon, DoneIcon} from '@contentful/f36-icons';
 import CancelUpload from "./components/CancelUpload";
 import ProgressBar from "./components/ProgressBar";
 import loadScript from '../../utils/loadScript';
-import {Medias} from "../../utils/types";
+import {Media} from "../../utils/types";
 import wistiaFetch from "../../utils/wistiaFetch";
 
 declare global {
@@ -51,7 +51,7 @@ const Wistia = ({ viewVideosList }: any) => {
 
     const [fileName, setFileName] = useState('');
     const [wistiaUrl, setWistiaUrl] = useState('');
-    const [media, setMedia] = useFieldValue<Medias[] | undefined>();
+    const [media, setMedia] = useFieldValue<Media[] | undefined>();
 
     const filterErrorMessage = (error: string, query: string) => {
         return error.includes(query);
