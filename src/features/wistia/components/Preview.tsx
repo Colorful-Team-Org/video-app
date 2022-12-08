@@ -1,12 +1,13 @@
 import {Box, Flex, Paragraph, Subheading} from "@contentful/f36-components";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import tokens from "@contentful/f36-tokens";
 import {useSDK} from "@contentful/react-apps-toolkit";
 import {FieldExtensionSDK} from "@contentful/app-sdk";
 import wistiaFetch from "../../../utils/wistiaFetch";
+import { Media } from "../../../utils/types";
 
 
-const Preview = ({media}: any) => {
+const Preview = ({ media }: { media: Media }) => {
 
     const sdk = useSDK<FieldExtensionSDK>();
 
@@ -14,13 +15,15 @@ const Preview = ({media}: any) => {
     const [preview, setPreview] = useState(true);
     const [errorMessage, setErrorMessage] = useState('');
 
-    const getMediaItem = wistiaFetch(
-        `https://api.wistia.com/v1/medias/${media.hashed_id}.json`,
-        `GET`,
-        `application/json`,
-        `Bearer ${sdk.parameters.installation.accessToken}`,
-        null
-    );
+    const getMediaItem = useMemo(() => (
+        wistiaFetch(
+            `https://api.wistia.com/v1/medias/${media.hashed_id}.json`,
+            `GET`,
+            `application/json`,
+            `Bearer ${sdk.parameters.installation.accessToken}`,
+            null
+        )
+    ), [media.hashed_id, sdk.parameters.installation.accessToken]);
 
     useEffect(() => {
         getMediaItem.then((data) => {
@@ -45,7 +48,7 @@ const Preview = ({media}: any) => {
         }).catch((error) => {
             throw new Error(error);
         });
-    }, [media]);
+    }, [getMediaItem, media]);
 
     useEffect(() => {
         if (media !== undefined) {
