@@ -3,7 +3,7 @@ import {FieldExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */useFieldValue, useSDK} from '@contentful/react-apps-toolkit';
 import Wistia from '../features/wistia/Wistia';
 import Preview from "../features/wistia/components/Preview";
-import {Medias} from "../utils/types";
+import {Media} from "../utils/types";
 import {Button, Flex, Spinner, Stack, Text, Tooltip} from "@contentful/f36-components";
 import {ModalLauncher, ModalConfirm} from "@contentful/f36-modal";
 import {Notification} from '@contentful/f36-notification';
@@ -13,7 +13,7 @@ import {DeleteIcon, AssetIcon, InfoCircleIcon} from '@contentful/f36-icons';
 const Field = () => {
     const sdk = useSDK<FieldExtensionSDK>();
 
-    const [media, setMedia] = useFieldValue<Medias[] | undefined>();
+    const [media, setMedia] = useFieldValue<Media[] | undefined>();
     const [timeChange, setTimeChange] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [isDisabled, setIsDisabled] = useState(false);

@@ -4,7 +4,7 @@ import {
 } from '@contentful/f36-components';
 import {DialogExtensionSDK} from '@contentful/app-sdk';
 import { /* useCMA, */ useSDK} from '@contentful/react-apps-toolkit';
-import {Medias} from "../utils/types";
+import {Media} from "../utils/types";
 import VideoCard from "../features/wistia/components/VideoCard";
 import {cx} from "emotion";
 import {styles} from './Dialog.styles';
@@ -15,7 +15,7 @@ const Dialog = () => {
     const sdk = useSDK<DialogExtensionSDK>();
 
     const searchInputRef = useRef<HTMLInputElement>(null);
-    const [queryResults, setQueryResults] = useState<Medias[] | undefined>();
+    const [queryResults, setQueryResults] = useState<Media[] | undefined>();
 
     const asyncGetMediaList = useAsync(
         async (projectId?: string) => {
@@ -41,7 +41,7 @@ const Dialog = () => {
                 }
                 throw new Error('We could not load the videos list. Bad response from Wistia API.');
             }
-            return await response.json() as Medias[]
+            return await response.json() as Media[]
         }, [sdk.parameters.installation.projectId]);
 
     const handleQueryInput = useCallback((query: string) => {
@@ -49,7 +49,7 @@ const Dialog = () => {
             setQueryResults(asyncGetMediaList.result);
             return;
         }
-        const filteredList = asyncGetMediaList.result?.filter((media: Medias) => {
+        const filteredList = asyncGetMediaList.result?.filter((media: Media) => {
             return media.name.toLowerCase().includes(query.toLowerCase());
         });
         setQueryResults(filteredList);
