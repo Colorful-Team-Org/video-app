@@ -1,19 +1,18 @@
-import React, {useEffect, useState} from 'react';
-import {FieldExtensionSDK} from '@contentful/app-sdk';
-import { /* useCMA, */useFieldValue, useSDK} from '@contentful/react-apps-toolkit';
-import Wistia from '../features/wistia/Wistia';
+import { FieldExtensionSDK } from '@contentful/app-sdk';
+import { Button, Flex, Spinner, Stack, Text, Tooltip } from "@contentful/f36-components";
+import { AssetIcon, DeleteIcon, InfoCircleIcon } from '@contentful/f36-icons';
+import { Notification } from '@contentful/f36-notification';
+import { /* useCMA, */ useFieldValue, useSDK } from '@contentful/react-apps-toolkit';
+import { useEffect, useState } from 'react';
 import Preview from "../features/wistia/components/Preview";
-import {Media} from "../utils/types";
-import {Button, Flex, Spinner, Stack, Text, Tooltip} from "@contentful/f36-components";
-import {ModalLauncher, ModalConfirm} from "@contentful/f36-modal";
-import {Notification} from '@contentful/f36-notification';
-import {DeleteIcon, AssetIcon, InfoCircleIcon} from '@contentful/f36-icons';
+import Wistia from '../features/wistia/Wistia';
+import { Media } from "../utils/types";
 
 
 const Field = () => {
     const sdk = useSDK<FieldExtensionSDK>();
 
-    const [media, setMedia] = useFieldValue<Media[] | undefined>();
+    const [media, setMedia] = useFieldValue<Media | undefined>();
     const [timeChange, setTimeChange] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [isDisabled, setIsDisabled] = useState(false);
@@ -74,6 +73,9 @@ const Field = () => {
     }
 
     const setNewThumbnail = async () => {
+        if (!media?.assets[0].url) {
+            return;
+        }
         setIsLoading(true);
         setIsDisabled(true);
 
@@ -86,7 +88,6 @@ const Field = () => {
 
         // Extracting the thumbnail
         // https://wistia.com/support/developers/extracting-thumbnails#extracting-the-thumbnail
-        //@ts-ignore
         const embedAssetUrl = `${(media.assets[0].url).split('.bin')[0]}.jpg?video_still_time=${timeChange}`
 
         //TODO: DRY - optimize Thumbnail extraction
@@ -105,7 +106,6 @@ const Field = () => {
             });
 
         if (newThumbnail.hashed_id !== undefined) {
-            //@ts-ignore
             await fetch(`https://api.wistia.com/v1/medias/${media.hashed_id}.json?new_still_media_id=${newThumbnail.hashed_id}`, {
                 method: 'PUT',
                 headers,
@@ -144,7 +144,6 @@ const Field = () => {
             // Get time change for thumbnail extraction
             window._wq = window._wq || [];
             window._wq.push({
-                //@ts-ignore
                 id: media.hashed_id, onReady: function (video: any) {
                     video.ready(() => {
                         console.log('🎬 Video is ready');
