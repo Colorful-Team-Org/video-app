@@ -1,7 +1,6 @@
-import {Box, IconButton, ModalLauncher, ModalConfirm, Text, Tooltip} from '@contentful/f36-components';
-import {CloseTrimmedIcon} from '@contentful/f36-icons';
-import React from "react";
-import {useSDK} from "@contentful/react-apps-toolkit";
+import { Box, IconButton, Tooltip } from '@contentful/f36-components';
+import { CloseTrimmedIcon } from '@contentful/f36-icons';
+import { useSDK } from "@contentful/react-apps-toolkit";
 
 
 const CancelUpload = () => {
@@ -16,8 +15,8 @@ const CancelUpload = () => {
             cancelLabel: 'Continue uploading',
             shouldCloseOnEscapePress: true,
             shouldCloseOnOverlayClick: true,
-        }).then((res) => {
-            if (res === true) {
+        }).then((confirmed) => {
+            if (confirmed) {
                 window.wistiaUploader.cancel();
                 window.location.reload();
             }
