@@ -13,9 +13,8 @@ const Field = () => {
     const sdk = useSDK<FieldExtensionSDK>();
 
     const [media, setMedia] = useFieldValue<Media | undefined>();
-    const [timeChange, setTimeChange] = useState(0);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isDisabled, setIsDisabled] = useState(false);
+    const [video, setVideo] = useState<any>();
+    const [thumbIsLoading, setThumbIsLoading] = useState(false);
 
     useEffect(() => {
         sdk.window.startAutoResizer();
@@ -49,8 +48,8 @@ const Field = () => {
             cancelLabel: 'Cancel',
             shouldCloseOnEscapePress: true,
             shouldCloseOnOverlayClick: true,
-        }).then((res) => {
-            if (res === true) {
+        }).then((confirmed) => {
+            if (confirmed) {
                 Notification.success(
                     'Note that the video asset is still available in your Wistia project.',
                     {title: 'Video removed', duration: 2500}
@@ -72,12 +71,13 @@ const Field = () => {
         )
     }
 
+    
+
     const setNewThumbnail = async () => {
         if (!media?.assets[0].url) {
             return;
         }
-        setIsLoading(true);
-        setIsDisabled(true);
+        setThumbIsLoading(true);
 
         const headers = new Headers(
             {
@@ -88,7 +88,7 @@ const Field = () => {
 
         // Extracting the thumbnail
         // https://wistia.com/support/developers/extracting-thumbnails#extracting-the-thumbnail
-        const embedAssetUrl = `${(media.assets[0].url).split('.bin')[0]}.jpg?video_still_time=${timeChange}`
+        const embedAssetUrl = `${(media.assets[0].url).split('.bin')[0]}.jpg?video_still_time=${video?.time() || 0}`
 
         //TODO: DRY - optimize Thumbnail extraction
         const newThumbnail = await fetch(`https://upload.wistia.com?project_id=${sdk.parameters.installation.projectId}`, {
@@ -111,7 +111,10 @@ const Field = () => {
                 headers,
             }).then(response => {
                 if (response.ok) {
-                    Notification.success('We\'re updating the thumbnail. The player will reload once the thumbnail is ready.', {title: 'Processing...'});
+                    Notification.success(
+                        `We're updating the thumbnail. It might take up to a minute for changes to take effect.`,
+                        { title: 'Processing...' }
+                    );
                 }
             }).catch(error => {
                 console.error('Set thumbnail error: ', error);
@@ -126,18 +129,15 @@ const Field = () => {
             }).then(response => {
                 if (response.ok) {
                     console.log('✅ Temporary thumbnail file has been deleted.');
-                    setTimeout(() => {
-                        setIsLoading(false);
-                        console.log('🔄 Reloading preview window...');
-                        window.location.reload();
-                    }, 9000);
                 }
             }).catch(error => {
                 console.error('Delete thumbnail error: ', error);
                 return error
-            });
+            }).finally(() => setThumbIsLoading(false));
         }
     }
+
+    const editingDisabled = thumbIsLoading || !video;
 
     useEffect(() => {
         if (media !== undefined) {
@@ -149,14 +149,7 @@ const Field = () => {
                         console.log('🎬 Video is ready');
                         // Set video embed height to prevent the preview from breaking the layout after processing is done
                         video.height(395, {constrain: false});
-                        // Set the time change when the video is being paused
-                        video.bind("pause", function () {
-                            setTimeChange(video.time());
-                        });
-                        // Set the time change when the video is playing or progress bar is dragged
-                        video.bind("timechange", function () {
-                            setTimeChange(video.time());
-                        });
+                        setVideo(video);
                     });
                 }
             });
@@ -177,11 +170,11 @@ const Field = () => {
                         <Stack spacing="spacingXs" marginTop="spacingXs" marginBottom="spacingXs">
                             <Button
                                 variant="secondary"
-                                isDisabled={isDisabled}
+                                isDisabled={editingDisabled}
                                 startIcon={<AssetIcon/>}
                                 onClick={() => setNewThumbnail()}
                             >
-                                {isLoading ? (
+                                {thumbIsLoading ? (
                                     <>
                                         <Text marginRight="spacingXs">Loading</Text>
                                         <Spinner size="medium" variant="default"/>
@@ -195,7 +188,7 @@ const Field = () => {
                         <Stack spacing="spacingXs" marginTop="spacingXs" marginBottom="spacingXs">
                             <Button
                                 variant="secondary"
-                                isDisabled={isDisabled}
+                                isDisabled={editingDisabled}
                                 startIcon={<DeleteIcon/>}
                                 onClick={removeVideoData}
                             >
