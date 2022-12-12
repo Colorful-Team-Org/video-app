@@ -3,7 +3,7 @@ import {Box} from '@contentful/f36-components';
 import {cx} from "emotion";
 import {styles} from "./ProgressBar.styles"
 
-const ProgressBar = ({progress}: any) => {
+const ProgressBar = ({progress}: { progress: string }) => {
 
     return (
         <Box

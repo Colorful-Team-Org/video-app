@@ -2,8 +2,8 @@ export interface Media {
     id: number;
     name: string;
     type: string;
-    created: Date;
-    updated: Date;
+    created: string;
+    updated: string;
     duration: number;
     hashed_id: string;
     description: string;

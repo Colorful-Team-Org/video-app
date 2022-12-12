@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {KeyboardEventHandler, useState} from "react";
 import {Box, Flex, Text} from "@contentful/f36-components";
 import {Skeleton} from '@contentful/f36-skeleton';
 import {timeDuration, timeSince} from "../../../utils/time";
@@ -6,9 +6,17 @@ import {useSDK} from "@contentful/react-apps-toolkit";
 import {DialogExtensionSDK} from "@contentful/app-sdk";
 import {cx} from "emotion";
 import {styles} from "./VideoCard.styles"
+import {Media} from "../../../utils/types";
+
+interface Props {
+    medias: Media;
+    width: number;
+    height: number;
+    handleKeyboardEvent: KeyboardEventHandler;
+}
 
 
-const VideoCard = ({medias, width, height, handleKeyboardEvent}: any) => {
+const VideoCard = ({medias, width, height, handleKeyboardEvent}: Props) => {
     const sdk = useSDK<DialogExtensionSDK>();
     const [mediaId, setMediaId] = useState(null);
     const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
@@ -25,7 +33,7 @@ const VideoCard = ({medias, width, height, handleKeyboardEvent}: any) => {
                 onMouseLeave={() => handleMouseOver(null)}
                 onFocus={() => handleMouseOver(medias.id)}
                 onBlur={() => handleMouseOver(null)}
-                onKeyDown={(e: any) => handleKeyboardEvent(e, medias)}
+                onKeyDown={handleKeyboardEvent}
                 role="button"
                 tabIndex={0}
                 aria-label={medias.name}
