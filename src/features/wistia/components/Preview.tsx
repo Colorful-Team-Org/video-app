@@ -7,7 +7,11 @@ import wistiaFetch from "../../../utils/wistiaFetch";
 import { Media } from "../../../utils/types";
 
 
-const Preview = ({ media }: { media: Media }) => {
+interface Props {
+    media: Media;
+}
+
+const Preview = ({ media }: Props) => {
 
     const sdk = useSDK<FieldExtensionSDK>();
 
