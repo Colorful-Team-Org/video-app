@@ -7,6 +7,6 @@ const loadScript = (src: string) => {
     script.async = true;
     document.body.appendChild(script);
   });
-}
+};
 
 export default loadScript;
